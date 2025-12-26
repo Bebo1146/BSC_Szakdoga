@@ -1,0 +1,90 @@
+.topbar {
+  height: 64px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 20px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex: 1;
+}
+
+.link {
+  color: #6b7280;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 10px 6px;
+  border-bottom: 2px solid transparent;
+
+  &:hover {
+    color: #111827;
+  }
+
+  &.active {
+    color: #111827;
+    border-bottom-color: #111827;
+  }
+}
+
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  height: 36px;
+  width: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.store {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  border-radius: 12px;
+}
+
+.avatar {
+  height: 28px;
+  width: 28px;
+  border-radius: 999px;
+  background: #111827;
+  color: white;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.store-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.caret {
+  color: #6b7280;
+}

@@ -1,0 +1,104 @@
+<div class="app">
+  <!-- Top bar -->
+  <app-navbar></app-navbar>
+
+  <!-- Page -->
+  <main class="page">
+    <h1>Product listing</h1>
+
+    <!-- Toolbar -->
+    <section class="toolbar">
+      <div class="search">
+        <span class="search-ic">🔎</span>
+        <input
+          type="text"
+          placeholder="Search"
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+        />
+      </div>
+
+      <div class="selects">
+        <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+          <option value="All">All</option>
+          <option value="Active">Active</option>
+          <option value="Draft">Draft</option>
+          <option value="Archived">Archived</option>
+        </select>
+
+        <select [ngModel]="sort()" (ngModelChange)="sort.set($event)">
+          <option value="Newest">Newest</option>
+          <option value="Name A-Z">Name A-Z</option>
+        </select>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="toolbar-actions">
+        <button class="ghost">Export</button>
+        <button class="ghost">Import</button>
+        <button class="primary" (click)="onAddProduct()">+ Add product</button>
+      </div>
+    </section>
+
+    <!-- Table -->
+    <section class="card">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="col-check">
+              <input
+                type="checkbox"
+                [checked]="isAllSelected()"
+                (change)="toggleAll($any($event.target).checked)"
+              />
+            </th>
+            <th class="col-product">PRODUCT</th>
+            <th>NAME</th>
+            <th>STATUS</th>
+            <th>CATEGORY</th>
+            <th>INVENTORY</th>
+            <th>VENDOR</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let p of filtered()">
+            <td class="col-check">
+              <input
+                type="checkbox"
+                [checked]="selectedIds().has(p.id)"
+                (change)="toggleOne(p.id, $any($event.target).checked)"
+              />
+            </td>
+
+            <td class="col-product">
+              <div class="thumb" aria-hidden="true">🖼️</div>
+            </td>
+
+            <td class="name">
+              {{ p.name }}
+            </td>
+
+            <td>
+              <span class="badge" [class.draft]="p.status === 'Draft'" [class.archived]="p.status === 'Archived'">
+                {{ p.status }}
+              </span>
+            </td>
+
+            <td>
+              <span class="pill">{{ p.category }}</span>
+            </td>
+
+            <td class="muted">{{ p.inventoryText }}</td>
+            <td class="muted">{{ p.vendor }}</td>
+          </tr>
+
+          <tr *ngIf="filtered().length === 0">
+            <td colspan="7" class="empty">No results.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
