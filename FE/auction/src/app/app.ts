@@ -50,7 +50,7 @@ export class App {
     this.loading.set(true);
     this.error.set(null);
 
-    this.http.get<ProductRow[]>('http://localhost:5184/api/products').subscribe({
+    this.http.get<ProductRow[]>('http://localhost:5000/api/products').subscribe({
       next: (rows) => {
         this.products.set(rows ?? []);
         this.loading.set(false);

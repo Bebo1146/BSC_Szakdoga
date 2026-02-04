@@ -1,0 +1,9 @@
+{
+  "clientId": "User_Registration_Client",
+  "protocol": "openid-connect",
+  "enabled": true,
+  "publicClient": false,
+  "serviceAccountsEnabled": true,
+  "standardFlowEnabled": false,
+  "directAccessGrantsEnabled": false
+}

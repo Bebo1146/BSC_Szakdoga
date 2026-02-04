@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "OAuthStart": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  },
+  "defaultProfile": "OAuthStart"
+}
