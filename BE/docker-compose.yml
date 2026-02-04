@@ -10,7 +10,12 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
-    command: ["start-dev"]   # IMPORTANT for localhost
+    command:
+      - start-dev
+      # Optional but useful during theme dev:
+      - --spi-theme-cache-themes=false
+      - --spi-theme-cache-templates=false
+      - --spi-theme-static-max-age=-1
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
@@ -24,8 +29,13 @@ services:
       KC_HTTP_ENABLED: "true"
     ports:
       - "8080:8080"
+    volumes:
+      - ./themes:/opt/keycloak/themes # mount content of themes to (:) /opt/keycloak/themes
     depends_on:
       - postgres
 
 volumes:
   pgdata:
+
+
+# http://localhost:8080/realms/dev-realm/account/
