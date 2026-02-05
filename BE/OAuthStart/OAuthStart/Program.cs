@@ -238,6 +238,8 @@ namespace OAuthStart
 
                 string userInfoJson = await client.GetStringAsync(new Uri("http://localhost:8080/admin/realms/dev-realm/users?username=john"));
 
+                //string userInfoJson = await client.GetStringAsync(new Uri("http://localhost:8080/admin/realms/dev-realm/users?username=patkany"));
+
                 JsonDocument userInfo = JsonDocument.Parse(userInfoJson);
 
                 string userId = userInfo.RootElement[0].GetProperty("id").GetString();
@@ -253,6 +255,44 @@ namespace OAuthStart
                     new ResourceOwnerPasswordCredentialsFlowClient(new Uri(devDiscoveryDocument.TokenEndpoint), "ropc-client", "john", "newPassword1234");
 
                 string userToken = await UserROPC.GetTokenAsync();
+
+                string myappWeb = """
+                {
+                  "clientId": "myapp-web",
+                  "name": "My App Web Client",
+                  "description": "Frontend client for My App",
+
+                  "enabled": true,
+                  "protocol": "openid-connect",
+
+                  "publicClient": true,
+                  "standardFlowEnabled": true,
+                  "implicitFlowEnabled": false,
+                  "directAccessGrantsEnabled": false,
+
+                  "rootUrl": "http://localhost:3000",
+                  "baseUrl": "http://localhost:3000",
+
+                  "redirectUris": [
+                    "http://localhost:3000/*"
+                  ],
+
+                  "webOrigins": [
+                    "http://localhost:3000"
+                  ],
+
+                  "attributes": {
+                    "post.logout.redirect.uris": "http://localhost:3000/*"
+                  }
+                }
+                
+                """;
+
+                JsonDocument myappWebRegister = JsonDocument.Parse(myappWeb);
+
+                await clientRegister.RegisterAsync(myappWebRegister, new Uri("http://localhost:8080/admin/realms/dev-realm/clients"), token);
+
+                // http://localhost:8080/realms/dev-realm/protocol/openid-connect/auth?client_id=myapp-web&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&response_type=code&scope=openid&prompt=create
             }
         }
     }

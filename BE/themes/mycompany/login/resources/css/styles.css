@@ -1,3 +1,217 @@
-/* Example: change background + button */
-body { background:red; }
-#kc-login { border-radius: 100px; }
+/* ===== App-like base ===== */
+:root {
+  --bg: #f6f7fb;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --surface: #ffffff;
+  --surface-2: #fafafa;
+  --primary: #111827;
+  --ring: rgba(17, 24, 39, 0.18);
+  --radius-12: 12px;
+  --radius-16: 16px;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
+}
+
+/* ===== Centered card layout (Keycloak v2 / PatternFly) ===== */
+.pf-v5-c-login,
+.pf-c-login {
+  background: transparent !important;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px 20px 60px;
+}
+
+.pf-v5-c-login__container,
+.pf-c-login__container {
+  max-width: 460px;
+  width: 100%;
+}
+
+.pf-v5-c-login__main,
+.pf-c-login__main,
+.card-pf {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-16) !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+
+/* Optional: remove big header area if present */
+#kc-header,
+#kc-header-wrapper {
+  display: none;
+}
+
+/* ===== Headings ===== */
+#kc-page-title,
+.pf-v5-c-title,
+.pf-c-title {
+  color: var(--text) !important;
+  letter-spacing: -0.02em;
+}
+
+#kc-page-title {
+  font-size: 28px !important;
+  margin: 0 0 6px !important;
+}
+
+/* Subtext / instructions */
+#kc-page-subtitle,
+.instruction,
+.pf-v5-c-helper-text,
+.pf-c-helper-text,
+.kc-feedback-text,
+#kc-info-wrapper,
+#kc-info-wrapper * {
+  color: var(--muted) !important;
+}
+
+/* ===== Form spacing ===== */
+#kc-content,
+#kc-form,
+#kc-form-wrapper {
+  padding: 22px 22px 18px;
+}
+
+#kc-form-login,
+#kc-register-form {
+  display: grid;
+  gap: 12px;
+}
+
+/* Labels */
+label,
+.pf-v5-c-form__label,
+.pf-c-form__label {
+  color: var(--text) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+.pf-v5-c-form-control,
+.pf-c-form-control {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-12) !important;
+  padding: 10px 12px !important;
+  font-size: 14px !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+input:focus,
+.pf-v5-c-form-control:focus,
+.pf-c-form-control:focus {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 4px var(--ring) !important;
+}
+
+/* Validation messages */
+.pf-v5-c-helper-text__item,
+.pf-c-helper-text__item,
+.kc-feedback-text {
+  font-size: 12px !important;
+}
+
+/* ===== Buttons ===== */
+#kc-form-buttons {
+  margin-top: 6px;
+}
+
+#kc-login,
+#kc-register,
+input[type="submit"],
+.pf-v5-c-button.pf-m-primary,
+.pf-c-button.pf-m-primary {
+  width: 100%;
+  background: var(--primary) !important;
+  color: #fff !important;
+  border: 1px solid var(--primary) !important;
+  border-radius: var(--radius-12) !important;
+  padding: 10px 12px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+#kc-login:hover,
+#kc-register:hover,
+input[type="submit"]:hover,
+.pf-v5-c-button.pf-m-primary:hover,
+.pf-c-button.pf-m-primary:hover {
+  filter: brightness(0.95);
+}
+
+/* Secondary links styled like your "muted" */
+#kc-registration a,
+#kc-login a,
+#kc-info-wrapper a,
+a {
+  color: var(--muted);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--text);
+}
+
+/* ===== Checkbox row ===== */
+.pf-v5-c-check,
+.pf-c-check,
+#kc-form-options {
+  margin-top: 4px;
+}
+
+.pf-v5-c-check__label,
+.pf-c-check__label {
+  color: var(--muted) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+}
+
+/* ===== Social providers (if enabled) ===== */
+#kc-social-providers,
+.kc-social-links {
+  padding: 0 22px 18px;
+}
+
+#kc-social-providers a,
+.kc-social-links a,
+.pf-v5-c-button.pf-m-secondary,
+.pf-c-button.pf-m-secondary {
+  width: 100%;
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  border-radius: var(--radius-12) !important;
+  padding: 10px 12px !important;
+  font-weight: 800 !important;
+}
+
+/* ===== Little footer spacing ===== */
+#kc-info-wrapper {
+  padding: 0 22px 22px;
+}
+
+/* 
+http://localhost:8080/realms/dev-realm/protocol/openid-connect/auth?client_id=myapp-web&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&response_type=code&scope=openid&prompt=create 
+*/
