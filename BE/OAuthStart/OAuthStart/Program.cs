@@ -32,7 +32,7 @@ namespace OAuthStart
 
             string token = await ROPCFlowClient.GetTokenAsync();
 
-            //Console.WriteLine(token);
+            Console.WriteLine(token);
 
             string clientCredJson = """
                 {
