@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Navbar } from '../navbar/navbar';
+import { ProductTableComponent } from '../product-table/product-table.component';
+import { ProductFormModalComponent } from '../product-form-modal/product-form-modal.component';
+import { ProductToolbarComponent } from '../product-toolbar/product-toolbar.component';
 
 export enum ProductStatus {
   Draft = 0,
@@ -73,7 +76,7 @@ export interface NewProduct {
 @Component({
   selector: 'app-product',
   standalone: true,
-  imports: [CommonModule, FormsModule, Navbar],
+  imports: [CommonModule, FormsModule, Navbar, ProductTableComponent, ProductFormModalComponent, ProductToolbarComponent],
   templateUrl: './product.component.html',
   styleUrls: ['./product.component.scss'],
 })
@@ -230,26 +233,8 @@ export class ProductComponent {
     return rows;
   });
 
-  isAllSelected = computed(() => {
-    const rows = this.filtered();
-    if (rows.length === 0) return false;
-    const set = this.selectedIds();
-    return rows.every((r) => set.has(r.id));
-  });
-
-  toggleAll(checked: boolean): void {
-    const next = new Set(this.selectedIds());
-    const rows = this.filtered();
-    if (checked) rows.forEach((r) => next.add(r.id));
-    else rows.forEach((r) => next.delete(r.id));
-    this.selectedIds.set(next);
-  }
-
-  toggleOne(id: string, checked: boolean): void {
-    const next = new Set(this.selectedIds());
-    if (checked) next.add(id);
-    else next.delete(id);
-    this.selectedIds.set(next);
+  onSelectionChange(newSet: Set<string>): void {
+    this.selectedIds.set(newSet);
   }
 
   onAddProduct(): void {
@@ -307,5 +292,9 @@ export class ProductComponent {
           console.error(err);
         },
       });
+  }
+
+  onProductChange(updated: NewProduct): void {
+    this.newProduct.set(updated);
   }
 }

@@ -1,0 +1,38 @@
+<section class="toolbar">
+  <div class="search">
+    <span class="search-ic">🔎</span>
+    <input
+      type="text"
+      [placeholder]="searchPlaceholder"
+      [ngModel]="query"
+      (ngModelChange)="onQueryChange($event)"
+    />
+  </div>
+
+  <div class="selects">
+    <select [ngModel]="statusFilter" (ngModelChange)="onStatusFilterChange($event)">
+      <option value="All">All Statuses</option>
+      <option value="Active">Active</option>
+      <option value="Draft">Draft</option>
+      <option value="Sold">Sold</option>
+      <option value="Expired">Expired</option>
+      <option value="Cancelled">Cancelled</option>
+      <option value="UnderReview">Under Review</option>
+    </select>
+
+    <select [ngModel]="sort" (ngModelChange)="onSortChange($event)">
+      <option value="Newest">Newest</option>
+      <option value="Name A-Z">Name A-Z</option>
+      <option value="Ending Soon">Ending Soon</option>
+      <option value="Most Bids">Most Bids</option>
+    </select>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="toolbar-actions">
+    <button class="ghost" *ngIf="showExport" (click)="onExport()">Export</button>
+    <button class="ghost" *ngIf="showImport" (click)="onImport()">Import</button>
+    <button class="primary" *ngIf="showAddButton" (click)="onAddProduct()">{{ addButtonText }}</button>
+  </div>
+</section>
