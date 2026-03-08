@@ -1,14 +1,29 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule, CommonModule],
   templateUrl: './navbar.html',
-  styleUrls: ['./navbar.scss'],
+  styleUrl: './navbar.scss',
 })
 export class Navbar {
-  storeName = 'S.laz Store';
+  private readonly router = inject(Router);
+  readonly themeService = inject(ThemeService);
+
+  storeName: string = 'Store';
+
+  constructor() {
+    const storedName = localStorage.getItem('storeName');
+    if (storedName) {
+      this.storeName = storedName;
+    }
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
+  }
 }

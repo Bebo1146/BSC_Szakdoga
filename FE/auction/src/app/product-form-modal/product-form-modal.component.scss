@@ -6,15 +6,17 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
 .modal {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 12px;
   width: 480px;
   max-width: 90vw;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
+  transition: background-color 0.3s ease;
 }
 
 .modal-header {
@@ -22,12 +24,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px 12px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
 
   h2 {
     margin: 0;
     font-size: 1.25rem;
     font-weight: 600;
+    color: var(--text-primary);
   }
 }
 
@@ -36,11 +40,12 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--text-secondary);
   padding: 0 4px;
+  transition: color 0.2s;
 
   &:hover {
-    color: #111;
+    color: var(--text-primary);
   }
 }
 
@@ -59,21 +64,27 @@
   label {
     font-size: 0.85rem;
     font-weight: 500;
-    color: #374151;
+    color: var(--text-secondary);
   }
 
   input,
   select,
   textarea {
     padding: 8px 12px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border-color-dark);
     border-radius: 8px;
     font-size: 0.9rem;
     outline: none;
-    transition: border-color 0.15s;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    transition: all 0.15s;
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
 
     &:focus {
-      border-color: #6366f1;
+      border-color: var(--accent-color);
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
   }
@@ -84,18 +95,21 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 12px 24px 20px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
 
   button {
     border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     padding: 10px 12px;
     font-weight: 700;
     cursor: pointer;
-    background: white;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
 
     &:hover {
-      background: #f9fafb;
+      background: var(--hover-bg);
     }
 
     &.ghost {
@@ -103,12 +117,13 @@
     }
 
     &.primary {
-      background: #111827;
-      color: white;
-      border-color: #111827;
+      background: var(--button-primary-bg);
+      color: var(--button-primary-text);
+      border-color: var(--button-primary-bg);
 
       &:hover {
-        background: #1f2937;
+        background: var(--button-primary-hover);
+        border-color: var(--button-primary-hover);
       }
     }
 

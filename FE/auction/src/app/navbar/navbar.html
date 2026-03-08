@@ -11,8 +11,13 @@
   </nav>
 
   <div class="top-actions">
-    <button class="icon-btn" title="Notifications">🔔</button>
-    <button class="icon-btn" title="Settings">⚙️</button>
+    <button 
+      class="icon-btn theme-toggle" 
+      (click)="toggleTheme()" 
+      [title]="themeService.isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+    >
+      {{ themeService.isDarkMode() ? '☀️' : '🌙' }}
+    </button>
     <div class="store">
       <div class="avatar">S</div>
       <div class="store-name">{{ storeName }}</div>

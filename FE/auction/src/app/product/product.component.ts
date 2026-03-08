@@ -1,77 +1,17 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Navbar } from '../navbar/navbar';
 import { ProductTableComponent } from '../product-table/product-table.component';
 import { ProductFormModalComponent } from '../product-form-modal/product-form-modal.component';
 import { ProductToolbarComponent } from '../product-toolbar/product-toolbar.component';
-
-export enum ProductStatus {
-  Draft = 0,
-  Active = 1,
-  Sold = 2,
-  Expired = 3,
-  Cancelled = 4,
-  UnderReview = 5,
-}
-
-export enum TransactionStatus {
-  Pending = 0,
-  PaymentReceived = 1,
-  Shipped = 2,
-  Delivered = 3,
-  Completed = 4,
-  Disputed = 5,
-  Cancelled = 6,
-}
-
-export interface FeedbackDto {
-  reviewerId: string;
-  reviewerUsername: string;
-  rating: number;
-  comment: string | null;
-  createdAt: string;
-}
-
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  status: ProductStatus;
-  imageUrl: string;
-  startingPrice: number;
-  currentBid: number | null;
-  reservePrice: number | null;
-  auctionStartTime: string;
-  auctionEndTime: string;
-  totalBids: number;
-  highestBidderId: string | null;
-  highestBidderUsername: string | null;
-  sellerId: string;
-  sellerUsername: string;
-  createdAt: string;
-  updatedAt: string | null;
-  isCompleted: boolean;
-  transactionStatus: TransactionStatus | null;
-  feedback: FeedbackDto | null;
-  isActive: boolean;
-  hasEnded: boolean;
-  timeRemaining: string | null;
-}
-
-export interface NewProduct {
-  name: string;
-  description: string;
-  category: string;
-  status: ProductStatus;
-  imageUrl: string;
-  startingPrice: number;
-  reservePrice: number | null;
-  auctionStartTime: string;
-  auctionEndTime: string;
-}
+import { ProductService } from '../services/product.service';
+import {
+  Product,
+  NewProduct,
+  ProductStatus,
+  TransactionStatus,
+} from '../models/product.model';
 
 @Component({
   selector: 'app-product',
@@ -81,8 +21,7 @@ export interface NewProduct {
   styleUrls: ['./product.component.scss'],
 })
 export class ProductComponent {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5124/api/Products';
+  private readonly productService = inject(ProductService);
 
   readonly ProductStatus = ProductStatus;
   readonly TransactionStatus = TransactionStatus;
@@ -116,78 +55,21 @@ export class ProductComponent {
     this.loadProducts();
   }
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('access_token') ?? '';
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
-  }
-
   loadProducts(): void {
     this.loading.set(true);
     this.error.set(null);
 
-    this.http
-      .get<Product[]>(this.apiUrl + '/getAll', { headers: this.getAuthHeaders() })
-      .subscribe({
-        next: (rows) => {
-          this.products.set(rows ?? []);
-          this.loading.set(false);
-        },
-        error: (err) => {
-          this.loading.set(false);
-          this.error.set('Failed to load products.');
-          console.error(err);
-        },
-      });
-  }
-
-  statusLabel(status: ProductStatus): string {
-    const labels: Record<ProductStatus, string> = {
-      [ProductStatus.Draft]: 'Draft',
-      [ProductStatus.Active]: 'Active',
-      [ProductStatus.Sold]: 'Sold',
-      [ProductStatus.Expired]: 'Expired',
-      [ProductStatus.Cancelled]: 'Cancelled',
-      [ProductStatus.UnderReview]: 'Under Review',
-    };
-    return labels[status] ?? 'Unknown';
-  }
-
-  transactionLabel(status: TransactionStatus | null): string {
-    if (status === null) return '—';
-    const labels: Record<TransactionStatus, string> = {
-      [TransactionStatus.Pending]: 'Pending',
-      [TransactionStatus.PaymentReceived]: 'Payment Received',
-      [TransactionStatus.Shipped]: 'Shipped',
-      [TransactionStatus.Delivered]: 'Delivered',
-      [TransactionStatus.Completed]: 'Completed',
-      [TransactionStatus.Disputed]: 'Disputed',
-      [TransactionStatus.Cancelled]: 'Cancelled',
-    };
-    return labels[status] ?? 'Unknown';
-  }
-
-  formatTimeRemaining(timeRemaining: string | null): string {
-    if (!timeRemaining) return 'Ended';
-    // Parse .NET TimeSpan format: "d.hh:mm:ss.fffffff"
-    const match = timeRemaining.match(/^(\d+)\.(\d{2}):(\d{2}):(\d{2})/);
-    if (match) {
-      const [, days, hours, minutes] = match;
-      const d = parseInt(days, 10);
-      const h = parseInt(hours, 10);
-      const m = parseInt(minutes, 10);
-      if (d > 0) return `${d}d ${h}h`;
-      if (h > 0) return `${h}h ${m}m`;
-      return `${m}m`;
-    }
-    return timeRemaining;
-  }
-
-  formatCurrency(value: number | null): string {
-    if (value === null) return '—';
-    return '$' + value.toFixed(2);
+    this.productService.getAllProducts().subscribe({
+      next: (rows) => {
+        this.products.set(rows ?? []);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set('Failed to load products.');
+        console.error(err);
+      },
+    });
   }
 
   filtered = computed(() => {
@@ -258,10 +140,6 @@ export class ProductComponent {
     this.showAddModal.set(false);
   }
 
-  updateNewProduct<K extends keyof NewProduct>(field: K, value: NewProduct[K]): void {
-    this.newProduct.set({ ...this.newProduct(), [field]: value });
-  }
-
   saveProduct(): void {
     const product = this.newProduct();
 
@@ -276,22 +154,18 @@ export class ProductComponent {
 
     this.saving.set(true);
 
-    this.http
-      .post<Product[]>(this.apiUrl + '/addMultiple', [product], {
-        headers: this.getAuthHeaders(),
-      })
-      .subscribe({
-        next: () => {
-          this.saving.set(false);
-          this.showAddModal.set(false);
-          this.loadProducts();
-        },
-        error: (err) => {
-          this.saving.set(false);
-          alert('Failed to add product.');
-          console.error(err);
-        },
-      });
+    this.productService.addMultipleProducts([product]).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.showAddModal.set(false);
+        this.loadProducts();
+      },
+      error: (err) => {
+        this.saving.set(false);
+        alert('Failed to add product.');
+        console.error(err);
+      },
+    });
   }
 
   onProductChange(updated: NewProduct): void {

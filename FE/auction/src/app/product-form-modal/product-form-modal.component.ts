@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NewProduct, ProductStatus } from '../product/product.component';
+import { NewProduct, ProductStatus } from'../models/product.model';
 
 @Component({
   selector: 'app-product-form-modal',

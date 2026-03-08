@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Product, ProductStatus } from '../product/product.component';
+import { Product, ProductStatus } from '../models/product.model';
 
 @Component({
   selector: 'app-product-table',

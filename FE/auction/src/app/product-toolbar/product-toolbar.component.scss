@@ -10,16 +10,23 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 10px 12px;
+  transition: all 0.3s ease;
 
   input {
     border: none;
     outline: none;
     width: 100%;
     font-size: 14px;
+    background: transparent;
+    color: var(--text-primary);
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
   }
 }
 
@@ -28,13 +35,23 @@
   gap: 10px;
 
   select {
-    background: white;
-    border: 1px solid #e5e7eb;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 10px 12px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
     cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: var(--hover-bg);
+    }
+
+    option {
+      background: var(--card-bg);
+      color: var(--text-primary);
+    }
   }
 }
 
@@ -49,14 +66,16 @@
 
 button {
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--border-color);
   padding: 10px 12px;
   font-weight: 700;
   cursor: pointer;
-  background: white;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
 
   &:hover {
-    background: #f9fafb;
+    background: var(--hover-bg);
   }
 
   &.ghost {
@@ -64,12 +83,13 @@ button {
   }
 
   &.primary {
-    background: #111827;
-    color: white;
-    border-color: #111827;
+    background: var(--button-primary-bg);
+    color: var(--button-primary-text);
+    border-color: var(--button-primary-bg);
 
     &:hover {
-      background: #1f2937;
+      background: var(--button-primary-hover);
+      border-color: var(--button-primary-hover);
     }
   }
 }

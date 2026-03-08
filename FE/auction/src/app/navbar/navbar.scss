@@ -1,90 +1,132 @@
 .topbar {
-  height: 64px;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
-  gap: 24px;
+  justify-content: space-between;
   padding: 0 20px;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  height: 60px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+
+  [data-theme='dark'] & {
+    background: #1f2937;
+    border-bottom-color: #374151;
+  }
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .logo {
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+
+  [data-theme='dark'] & {
+    color: #f9fafb;
+  }
 }
 
 .nav {
   display: flex;
-  align-items: center;
-  gap: 18px;
-  flex: 1;
+  gap: 24px;
 }
 
 .link {
-  color: #6b7280;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 10px 6px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 4px 0;
   border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
 
   &:hover {
-    color: #111827;
+    color: var(--text-primary);
   }
 
   &.active {
-    color: #111827;
-    border-bottom-color: #111827;
+    color: var(--text-primary);
+    border-bottom-color: var(--accent-color);
   }
 }
 
 .top-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .icon-btn {
-  background: transparent;
-  border: 1px solid #e5e7eb;
-  height: 36px;
-  width: 36px;
-  border-radius: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
   cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+
+  &:hover {
+    background: var(--hover-bg);
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.theme-toggle {
+    font-size: 18px;
+  }
 }
 
 .store {
   display: flex;
   align-items: center;
-  gap: 10px;
-  border: 1px solid #e5e7eb;
-  padding: 6px 10px;
-  border-radius: 12px;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background: var(--hover-bg);
+  }
 }
 
 .avatar {
-  height: 28px;
-  width: 28px;
-  border-radius: 999px;
-  background: #111827;
-  color: white;
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  font-size: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .store-name {
-  font-weight: 700;
-  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+
+  [data-theme='dark'] & {
+    color: #f9fafb;
+  }
 }
 
 .caret {
-  color: #6b7280;
+  color: var(--text-secondary);
+  font-size: 12px;
+  transition: color 0.3s ease;
+
+  [data-theme='dark'] & {
+    color: #9ca3af;
+  }
 }
