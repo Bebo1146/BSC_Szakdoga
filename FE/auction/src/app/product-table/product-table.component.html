@@ -1,0 +1,101 @@
+<section class="card">
+  <div *ngIf="loading" class="loading">Loading products...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <table class="table" *ngIf="!loading && !error">
+    <thead>
+      <tr>
+        <th class="col-check">
+          <input
+            type="checkbox"
+            [checked]="isAllSelected()"
+            (change)="toggleAll($any($event.target).checked)"
+          />
+        </th>
+        <th class="col-product">PRODUCT</th>
+        <th>NAME</th>
+        <th>STATUS</th>
+        <th>CATEGORY</th>
+        <th>CURRENT BID</th>
+        <th>BIDS</th>
+        <th>TIME LEFT</th>
+        <th>SELLER</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let p of products" (click)="productClick.emit(p)">
+        <td class="col-check" (click)="$event.stopPropagation()">
+          <input
+            type="checkbox"
+            [checked]="selectedIds.has(p.id)"
+            (change)="toggleOne(p.id, $any($event.target).checked)"
+          />
+        </td>
+
+        <td class="col-product">
+          <div class="thumb">
+            <img
+              *ngIf="p.imageUrl"
+              [src]="p.imageUrl"
+              [alt]="p.name"
+              class="thumb-img"
+              (error)="$any($event.target).style.display='none'"
+            />
+            <span *ngIf="!p.imageUrl">🖼️</span>
+          </div>
+        </td>
+
+        <td class="name">
+          <div>{{ p.name }}</div>
+          <div class="description muted">{{ p.description }}</div>
+        </td>
+
+        <td>
+          <span
+            class="badge"
+            [class.active]="p.status === ProductStatus.Active"
+            [class.draft]="p.status === ProductStatus.Draft"
+            [class.sold]="p.status === ProductStatus.Sold"
+            [class.expired]="p.status === ProductStatus.Expired"
+            [class.cancelled]="p.status === ProductStatus.Cancelled"
+            [class.under-review]="p.status === ProductStatus.UnderReview"
+          >
+            {{ statusLabel(p.status) }}
+          </span>
+        </td>
+
+        <td>
+          <span class="pill">{{ p.category }}</span>
+        </td>
+
+        <td>
+          <div class="bid-info">
+            <span class="current-bid">{{ formatCurrency(p.currentBid) }}</span>
+            <span class="muted starting" *ngIf="p.currentBid === null">
+              Start: {{ formatCurrency(p.startingPrice) }}
+            </span>
+          </div>
+        </td>
+
+        <td class="center">{{ p.totalBids }}</td>
+
+        <td>
+          <span
+            class="time-remaining"
+            [class.ending-soon]="p.isActive && p.timeRemaining && p.timeRemaining.startsWith('0.')"
+            [class.ended]="p.hasEnded"
+          >
+            {{ formatTimeRemaining(p.timeRemaining) }}
+          </span>
+        </td>
+
+        <td class="muted">{{ p.sellerUsername }}</td>
+      </tr>
+
+      <tr *ngIf="products.length === 0">
+        <td colspan="9" class="empty">No results.</td>
+      </tr>
+    </tbody>
+  </table>
+</section>

@@ -4,12 +4,10 @@
   </div>
 
   <nav class="nav">
-    <a class="link" href="#">Home</a>
-    <a class="link" href="#">Dashboard</a>
-    <a class="link active" href="#">Product management</a>
-    <a class="link" href="#">Sales</a>
-    <a class="link" href="#">Store setting</a>
-    <a class="link" href="#">Support</a>
+    <a class="link" routerLink="/home" routerLinkActive="active">Home</a>
+    <a class="link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Products</a>
+    <a class="link" routerLink="/store-settings" routerLinkActive="active">Store setting</a>
+    <a class="link" routerLink="/support" routerLinkActive="active">Support</a>
   </nav>
 
   <div class="top-actions">

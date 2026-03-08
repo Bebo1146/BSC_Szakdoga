@@ -1,0 +1,190 @@
+// Copy the table-related styles from product.component.scss
+:host {
+  display: block;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    text-align: left;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: #6b7280;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fafafa;
+  }
+
+  tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    cursor: pointer;
+
+    &:hover {
+      background: #fbfbff;
+    }
+  }
+}
+
+.col-check {
+  width: 44px;
+}
+
+.col-product {
+  width: 96px;
+}
+
+.thumb {
+  height: 44px;
+  width: 64px;
+  border-radius: 12px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  display: grid;
+  place-items: center;
+  color: #9ca3af;
+}
+
+.thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.name {
+  font-weight: 800;
+
+  .description {
+    font-size: 0.8em;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
+  }
+}
+
+.muted {
+  color: #6b7280;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #111827;
+  font-weight: 800;
+  font-size: 12px;
+
+  &.draft {
+    background: #fff7ed;
+    color: #9a3412;
+  }
+
+  &.archived {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  &.active {
+    background: #e6f4ea;
+    color: #1e7e34;
+  }
+
+  &.sold {
+    background: #e8f0fe;
+    color: #1a73e8;
+  }
+
+  &.expired,
+  &.cancelled {
+    background: #fce8e6;
+    color: #c5221f;
+  }
+
+  &.under-review {
+    background: #fef7e0;
+    color: #e37400;
+  }
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #374151;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.bid-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.current-bid {
+  font-weight: 600;
+}
+
+.starting {
+  font-size: 0.8em;
+}
+
+.time-remaining {
+  white-space: nowrap;
+
+  &.ending-soon {
+    color: #e37400;
+    font-weight: 600;
+  }
+
+  &.ended {
+    color: #c5221f;
+  }
+}
+
+.center {
+  text-align: center;
+}
+
+.empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.loading,
+.error {
+  padding: 24px 16px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.error {
+  color: #c5221f;
+}
+
+input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
