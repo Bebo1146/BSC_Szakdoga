@@ -5,13 +5,6 @@
   <table class="table" *ngIf="!loading && !error">
     <thead>
       <tr>
-        <th class="col-check">
-          <input
-            type="checkbox"
-            [checked]="isAllSelected()"
-            (change)="toggleAll($any($event.target).checked)"
-          />
-        </th>
         <th class="col-product">PRODUCT</th>
         <th>NAME</th>
         <th>STATUS</th>
@@ -20,19 +13,12 @@
         <th>BIDS</th>
         <th>TIME LEFT</th>
         <th>SELLER</th>
+        <th>BID</th>
       </tr>
     </thead>
 
     <tbody>
       <tr *ngFor="let p of products" (click)="productClick.emit(p)">
-        <td class="col-check" (click)="$event.stopPropagation()">
-          <input
-            type="checkbox"
-            [checked]="selectedIds.has(p.id)"
-            (change)="toggleOne(p.id, $any($event.target).checked)"
-          />
-        </td>
-
         <td class="col-product">
           <div class="thumb">
             <img
@@ -91,6 +77,18 @@
         </td>
 
         <td class="muted">{{ p.sellerUsername }}</td>
+
+        <!-- Licit UI oszlop (kisebb helyen vagy kinyitva) -->
+        <td>
+          <app-product-bid
+            [productId]="p.id"
+            
+            
+            [endsAt]="p.auctionEndTime"
+            
+            (bidPlaced)="onBidPlaced($event, p)">
+          </app-product-bid>
+        </td>
       </tr>
 
       <tr *ngIf="products.length === 0">

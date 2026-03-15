@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Product, NewProduct } from '../models/product.model';
 
@@ -8,49 +8,42 @@ import { Product, NewProduct } from '../models/product.model';
 })
 export class ProductService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5124/api/Products';
+  // use relative path so the Angular dev proxy will forward to the backend
+  // private readonly apiUrl = 'http://localhost:5215/api/BffProxy';
+  private readonly apiUrl = '/api/BffProxy';
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('access_token') ?? '';
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
-  }
+  // Cookie-based flow: let interceptor handle cookies/auth.
+  private readonly defaultOptions = { withCredentials: true };
 
   getAllProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/getAll`, {
-      headers: this.getAuthHeaders(),
+    return this.http.get<Product[]>(`${this.apiUrl}/products/getall`, {
+      ...this.defaultOptions,
     });
   }
 
   getMyProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/my-products`, {
-      headers: this.getAuthHeaders(),
-    });
-  }
-
-  addProduct(product: NewProduct): Observable<Product> {
-    return this.http.post<Product>(this.apiUrl, product, {
-      headers: this.getAuthHeaders(),
+    return this.http.get<Product[]>(`${this.apiUrl}/products/my-products`, {
+      ...this.defaultOptions,
     });
   }
 
   addMultipleProducts(products: NewProduct[]): Observable<Product[]> {
-    return this.http.post<Product[]>(`${this.apiUrl}/addMultiple`, products, {
-      headers: this.getAuthHeaders(),
+    console.log('Adding multiple products:', products);
+
+    return this.http.post<Product[]>(`${this.apiUrl}/products/addMultiple`, products, {
+      ...this.defaultOptions,
     });
   }
 
   updateProduct(id: string, product: Partial<NewProduct>): Observable<Product> {
-    return this.http.put<Product>(`${this.apiUrl}/${id}`, product, {
-      headers: this.getAuthHeaders(),
+    return this.http.put<Product>(`${this.apiUrl}/products/${id}`, product, {
+      ...this.defaultOptions,
     });
   }
 
   deleteProduct(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
-      headers: this.getAuthHeaders(),
+    return this.http.delete<void>(`${this.apiUrl}/products/${id}`, {
+      ...this.defaultOptions,
     });
   }
 }

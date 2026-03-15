@@ -56,7 +56,7 @@ namespace RoleManagment
                 ]
                 """;
 
-                using var req = new HttpRequestMessage(HttpMethod.Post, $"{_address}users/{userId}/role-mappings/clients/{_realmManagementClientId}")
+                using HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, $"{_address}users/{userId}/role-mappings/clients/{_realmManagementClientId}")
                 {
                     Content = new StringContent(roleToAssign, Encoding.UTF8, "application/json")
                 };

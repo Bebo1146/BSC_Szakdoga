@@ -19,7 +19,7 @@ namespace SecretHandling.ExtensionMethods
             }
 
             Dictionary<string, Secret> a = new Dictionary<string, Secret>();
-            foreach (var item in retValue)
+            foreach (KeyValuePair<string, Secret> item in retValue)
             {
                 a.Add(item.Key, item.Value);
             }
@@ -31,7 +31,7 @@ namespace SecretHandling.ExtensionMethods
         {
             List<KeyValuePair<string, Secret>> retValue = new List<KeyValuePair<string, Secret>>();
 
-            foreach (var item in dictionary)
+            foreach (KeyValuePair<string, Secret> item in dictionary)
             {
                 retValue.Add(new KeyValuePair<string, Secret>(item.Key, item.Value));
             }

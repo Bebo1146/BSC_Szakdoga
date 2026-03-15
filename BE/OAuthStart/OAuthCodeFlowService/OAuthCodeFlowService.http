@@ -1,0 +1,6 @@
+@OAuthCodeFlowService_HostAddress = http://localhost:5215
+
+GET {{OAuthCodeFlowService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

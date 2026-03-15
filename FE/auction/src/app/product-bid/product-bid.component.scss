@@ -1,0 +1,82 @@
+:host {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.bid-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end; /* keep compact at the right side of a table cell */
+  padding: 0;
+}
+
+/* Inline compact form for table rows */
+.bid-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+/* Small numeric input to fit table cell */
+.bid-form input[type="number"] {
+  width: 96px;
+  max-width: 30%;
+  min-width: 72px;
+  padding: 6px 8px;
+  height: 34px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--input-bg, #fff);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+/* Small primary action button */
+.bid-form button {
+  height: 34px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: var(--button-primary-bg, #0b76ef);
+  color: var(--button-primary-text, #fff);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Disabled state */
+.bid-form button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Small helper text below the control */
+.bid-error {
+  color: var(--danger, #d9534f);
+  font-size: 0.78rem;
+  line-height: 1;
+  margin-top: 2px;
+  align-self: flex-end;
+}
+
+/* Very small screens: stack controls */
+@media (max-width: 520px) {
+  .bid-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .bid-form input[type="number"],
+  .bid-form button {
+    width: 100%;
+    max-width: 100%;
+  }
+}

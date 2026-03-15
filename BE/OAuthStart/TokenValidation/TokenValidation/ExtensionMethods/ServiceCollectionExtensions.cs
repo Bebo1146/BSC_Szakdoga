@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace TokenValidation.ExtensionMethods
+namespace TokenValidation.TokenValidation.ExtensionMethods
 {
     public static class ServiceCollectionExtensions
     {
@@ -28,7 +28,7 @@ namespace TokenValidation.ExtensionMethods
                 // Audience is now optional for testing
                 .ValidateOnStart();
 
-            var authOptions = configuration.GetSection(sectionName).Get<TokenValidationOptions>();
+            TokenValidationOptions? authOptions = configuration.GetSection(sectionName).Get<TokenValidationOptions>();
 
             // Register authentication scheme with direct configuration
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -58,7 +58,7 @@ namespace TokenValidation.ExtensionMethods
                         {
                             OnAuthenticationFailed = context =>
                             {
-                                var logger = context.HttpContext.RequestServices
+                                ILogger logger = context.HttpContext.RequestServices
                                     .GetRequiredService<ILoggerFactory>()
                                     .CreateLogger("JwtAuthentication");
 
@@ -70,7 +70,7 @@ namespace TokenValidation.ExtensionMethods
                             },
                             OnTokenValidated = context =>
                             {
-                                var logger = context.HttpContext.RequestServices
+                                ILogger logger = context.HttpContext.RequestServices
                                     .GetRequiredService<ILoggerFactory>()
                                     .CreateLogger("JwtAuthentication");
 
@@ -81,7 +81,7 @@ namespace TokenValidation.ExtensionMethods
                             },
                             OnChallenge = context =>
                             {
-                                var logger = context.HttpContext.RequestServices
+                                ILogger logger = context.HttpContext.RequestServices
                                     .GetRequiredService<ILoggerFactory>()
                                     .CreateLogger("JwtAuthentication");
 
@@ -93,7 +93,7 @@ namespace TokenValidation.ExtensionMethods
                             },
                             OnMessageReceived = context =>
                             {
-                                var logger = context.HttpContext.RequestServices
+                                ILogger logger = context.HttpContext.RequestServices
                                     .GetRequiredService<ILoggerFactory>()
                                     .CreateLogger("JwtAuthentication");
 
@@ -120,7 +120,7 @@ namespace TokenValidation.ExtensionMethods
             services.AddOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions>()
                 .Configure<IOptions<TokenValidationOptions>>((options, tvOpts) =>
                 {
-                    var opt = tvOpts.Value;
+                    TokenValidationOptions opt = tvOpts.Value;
 
                     options.AddPolicy("RequireConfiguredScopes", policy =>
                     {
@@ -132,12 +132,12 @@ namespace TokenValidation.ExtensionMethods
 
                         policy.RequireAssertion(context =>
                         {
-                            var scopes =
+                            string scopes =
                                 context.User.FindFirst("scp")?.Value ??
                                 context.User.FindFirst("scope")?.Value ??
                                 "";
 
-                            var scopeSet = scopes.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                            string[] scopeSet = scopes.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
                             // Requires ALL configured scopes. If you want "any", change All -> Any.
                             return opt.RequiredScopes.All(required => scopeSet.Contains(required));

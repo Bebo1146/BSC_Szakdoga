@@ -143,6 +143,8 @@ export class ProductComponent {
   saveProduct(): void {
     const product = this.newProduct();
 
+    console.log('Saving product:', product);
+
     if (!product.name.trim() || !product.category.trim()) {
       alert('Name and Category are required.');
       return;

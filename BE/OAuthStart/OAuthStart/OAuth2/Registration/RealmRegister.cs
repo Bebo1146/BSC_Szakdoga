@@ -11,8 +11,8 @@ namespace OAuthStart.OAuth2.Registration
             {
                 accessToken = accessToken.Trim().Trim('"');
 
-                var json = realmToRegister.RootElement.GetRawText();
-                using var req = new HttpRequestMessage(HttpMethod.Post, realmRegistrationUrl)
+                string json = realmToRegister.RootElement.GetRawText();
+                using HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, realmRegistrationUrl)
                 {
                     Content = new StringContent(json, Encoding.UTF8, "application/json")
                 };
@@ -21,8 +21,8 @@ namespace OAuthStart.OAuth2.Registration
                 req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
                 req.Headers.TryAddWithoutValidation("Accept", "application/json");
 
-                using var resp = await client.SendAsync(req, cancellationToken);
-                var body = await resp.Content.ReadAsStringAsync(cancellationToken);
+                using HttpResponseMessage resp = await client.SendAsync(req, cancellationToken);
+                string body = await resp.Content.ReadAsStringAsync(cancellationToken);
 
                 Console.WriteLine($"POST {realmRegistrationUrl}");
                 Console.WriteLine($"Status: {(int)resp.StatusCode} {resp.StatusCode}");

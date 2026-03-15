@@ -182,17 +182,17 @@ namespace ServicesHoster.Services
 
         public Task<ProductDto?> GetByIdAsync(string id)
         {
-            var product = Products.FirstOrDefault(p => p.Id == id);
+            ProductDto? product = Products.FirstOrDefault(p => p.Id == id);
             return Task.FromResult(product);
         }
 
-        public Task AddRangeAsync(IEnumerable<ProductDto> products, string userId)
+        public Task AddRangeAsync(IEnumerable<ProductDto> products, string userName, string userPreferedName)
         {
-            var now = DateTime.UtcNow;
-            foreach (var product in products)
+            DateTime now = DateTime.UtcNow;
+            foreach (ProductDto product in products)
             {
                 // Create new product with user info using the required constructor
-                var productWithUser = new ProductDto
+                ProductDto productWithUser = new ProductDto
                 {
                     Id = product.Id,
                     Name = product.Name,
@@ -208,8 +208,8 @@ namespace ServicesHoster.Services
                     TotalBids = product.TotalBids,
                     HighestBidderId = product.HighestBidderId,
                     HighestBidderUsername = product.HighestBidderUsername,
-                    SellerId = userId,
-                    SellerUsername = product.SellerUsername,
+                    SellerId = userName,
+                    SellerUsername = userPreferedName,
                     CreatedAt = now,
                     UpdatedAt = now,
                     IsCompleted = product.IsCompleted,
@@ -224,7 +224,7 @@ namespace ServicesHoster.Services
 
         public Task<IEnumerable<ProductDto>> GetByUserAsync(string userId)
         {
-            var userProducts = Products.Where(p => p.SellerId == userId);
+            IEnumerable<ProductDto> userProducts = Products.Where(p => p.SellerId == userId);
             return Task.FromResult(userProducts.AsEnumerable());
         }
     }

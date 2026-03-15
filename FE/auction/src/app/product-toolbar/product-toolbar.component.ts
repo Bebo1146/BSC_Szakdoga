@@ -41,12 +41,4 @@ export class ProductToolbarComponent {
   onAddProduct(): void {
     this.addProduct.emit();
   }
-
-  onExport(): void {
-    this.export.emit();
-  }
-
-  onImport(): void {
-    this.import.emit();
-  }
 }

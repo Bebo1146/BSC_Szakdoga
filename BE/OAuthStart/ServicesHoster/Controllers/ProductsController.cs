@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using ServicesHoster.Services;
-using System.Security.Claims;
+using TokenValidation.TokenValidation;
 
 namespace ServicesHoster.Controllers
 {
@@ -22,21 +22,20 @@ namespace ServicesHoster.Controllers
         [HttpGet("getall")]
         public async Task<IActionResult> GetAll()
         {
-            var products = await _productService.GetAllAsync();
+            IEnumerable<ProductDto> products = await _productService.GetAllAsync();
             return Ok(products);
         }
 
         [HttpGet("my-products")]
         public async Task<IActionResult> GetMyProducts()
         {
-            //var userId = GetCurrentUserId();
-            var userId = "user123";
-            if (string.IsNullOrEmpty(userId))
+            string userName = JwtClaimReader.GetNameFromJwt(JwtClaimReader.GetTokenFromRequest(Request));
+            if (string.IsNullOrEmpty(userName))
             {
                 return Unauthorized("User ID not found in token");
             }
 
-            var products = await _productService.GetByUserAsync(userId);
+            IEnumerable<ProductDto> products = await _productService.GetByUserAsync(userName);
             return Ok(products);
         }
 
@@ -45,7 +44,7 @@ namespace ServicesHoster.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var errors = ModelState
+                Dictionary<string, string[]> errors = ModelState
                     .Where(x => x.Value?.Errors.Count > 0)
                     .ToDictionary(
                         kvp => kvp.Key,
@@ -59,21 +58,20 @@ namespace ServicesHoster.Controllers
                 return BadRequest("No products provided.");
             }
 
-            //var userId = GetCurrentUserId();
-            var userId = "user123";
-            if (string.IsNullOrEmpty(userId))
+            string userName = JwtClaimReader.GetNameFromJwt(JwtClaimReader.GetTokenFromRequest(Request));
+            if (string.IsNullOrEmpty(userName))
             {
                 return Unauthorized("User ID not found in token");
             }
 
-            await _productService.AddRangeAsync(products, userId);
+            await _productService.AddRangeAsync(products, userName, JwtClaimReader.GetPreferredNameFromJwt(JwtClaimReader.GetTokenFromRequest(Request)));
             return CreatedAtAction(nameof(GetAll), new { count = products.Count }, products);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            var product = await _productService.GetByIdAsync(id);
+            ProductDto? product = await _productService.GetByIdAsync(id);
             return product is null ? NotFound() : Ok(product);
         }
 
@@ -82,28 +80,6 @@ namespace ServicesHoster.Controllers
         public IActionResult Health()
         {
             return Ok("OK");
-        }
-
-        // Helper method to extract user ID from JWT token
-        private string? GetCurrentUserId()
-        {
-            // Try different claim types that Keycloak might use
-            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst("sub")?.Value
-                ?? User.FindFirst("preferred_username")?.Value
-                ?? User.FindFirst("email")?.Value;
-        }
-
-        // Optional: Get detailed user info for debugging
-        [HttpGet("user-info")]
-        public IActionResult GetUserInfo()
-        {
-            var claims = User.Claims.Select(c => new { c.Type, c.Value });
-            return Ok(new
-            {
-                UserId = GetCurrentUserId(),
-                Claims = claims
-            });
         }
     }
 }

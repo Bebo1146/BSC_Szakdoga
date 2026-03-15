@@ -1,12 +1,15 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Product, ProductStatus } from '../models/product.model';
+import { BidService } from '../services/bid.service';
+import { AuthService } from '../services/auth.service';
+import { ProductBidComponent } from '../product-bid/product-bid.component';
 
 @Component({
   selector: 'app-product-table',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ProductBidComponent],
   templateUrl: './product-table.component.html',
   styleUrls: ['./product-table.component.scss'],
 })
@@ -20,6 +23,9 @@ export class ProductTableComponent {
   @Output() productClick = new EventEmitter<Product>();
 
   readonly ProductStatus = ProductStatus;
+
+  private readonly bidService = inject(BidService);
+  public authService = inject(AuthService);
 
   isAllSelected(): boolean {
     return this.products.length > 0 && this.products.every(p => this.selectedIds.has(p.id));
@@ -75,5 +81,21 @@ export class ProductTableComponent {
   formatCurrency(value: number | null): string {
     if (value === null) return '—';
     return `$${value.toFixed(2)}`;
+  }
+
+  onBidPlaced(event: { productId: string; amount: number }, row: Product) {
+    this.bidService.placeBid(event.productId, event.amount).subscribe({
+      next: (res) => {
+        // egyszerű frissítés: állítsd be a helyi legmagasabb licitet a válasz vagy a beadott összeg alapján
+        if (row && row.id === event.productId) {
+          //row.highestBid = Math.max(row.highestBid || 0, event.amount);
+        }
+        // opcionális: értesítés / toast
+      },
+      error: (err) => {
+        console.error('Licit hiba', err);
+        // opcionális: hibajelzés a felhasználónak
+      }
+    });
   }
 }

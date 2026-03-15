@@ -1,7 +1,7 @@
-using TokenValidation.ExtensionMethods;
 using ServicesHoster.Services;
+using TokenValidation.TokenValidation.ExtensionMethods;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -23,7 +23,7 @@ builder.Services.AddCors(options =>
 });
 
 // Register Product Service based on configuration
-var storageType = builder.Configuration.GetValue<string>("Storage:Type") ?? "InMemory";
+string storageType = builder.Configuration.GetValue<string>("Storage:Type") ?? "InMemory";
 
 switch (storageType.ToLower())
 {
@@ -49,7 +49,7 @@ builder.Services.AddTokenValidation(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -11,8 +11,8 @@ namespace OAuthStart.OAuth2.Registration
             {
                 accessToken = accessToken.Trim().Trim('"');
 
-                var json = clientToRegister.RootElement.GetRawText();
-                using var req = new HttpRequestMessage(HttpMethod.Post, clientRegistrationUrl)
+                string json = clientToRegister.RootElement.GetRawText();
+                using HttpRequestMessage req = new HttpRequestMessage(HttpMethod.Post, clientRegistrationUrl)
                 {
                     Content = new StringContent(json, Encoding.UTF8, "application/json")
                 };
@@ -21,8 +21,8 @@ namespace OAuthStart.OAuth2.Registration
                 req.Headers.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
                 req.Headers.TryAddWithoutValidation("Accept", "application/json");
 
-                using var resp = await client.SendAsync(req, cancellationToken);
-                var body = await resp.Content.ReadAsStringAsync(cancellationToken);
+                using HttpResponseMessage resp = await client.SendAsync(req, cancellationToken);
+                string body = await resp.Content.ReadAsStringAsync(cancellationToken);
 
                 Console.WriteLine($"POST {clientRegistrationUrl}");
                 Console.WriteLine($"Status: {(int)resp.StatusCode} {resp.StatusCode}");

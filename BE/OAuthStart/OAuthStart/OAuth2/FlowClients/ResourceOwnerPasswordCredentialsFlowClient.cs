@@ -39,7 +39,7 @@ namespace OAuthStart.OAuth2HttpCommunication.FlowClients
             using (HttpClient client = new HttpClient())
             {
                 Console.WriteLine("DEBUG --- ResourceOwnerPasswordCredentialsFlowClient>GetTokenAsync  ---");
-                var output = _postData.Select(kvp => $"{kvp.Key}={(kvp.Key == "password" ? "**********" : kvp.Value)}");
+                IEnumerable<string> output = _postData.Select(kvp => $"{kvp.Key}={(kvp.Key == "password" ? "**********" : kvp.Value)}");
 
                 Console.WriteLine($"DEBUG --- token request content:\r\n{string.Join(Environment.NewLine, output)}");
 

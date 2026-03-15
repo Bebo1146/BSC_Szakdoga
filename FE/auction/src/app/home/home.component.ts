@@ -98,6 +98,36 @@ export class HomeComponent {
     });
   }
 
+  saveProduct(): void {
+    const product = this.newProduct();
+
+    console.log('Saving product:', product);
+
+    if (!product.name.trim() || !product.category.trim()) {
+      alert('Name and Category are required.');
+      return;
+    }
+    if (product.startingPrice <= 0) {
+      alert('Starting price must be greater than 0.');
+      return;
+    }
+
+    this.saving.set(true);
+
+    this.productService.addMultipleProducts([product]).subscribe({
+      next: () => {
+        this.saving.set(false);
+        this.showAddModal.set(false);
+        this.loadProducts();
+      },
+      error: (err) => {
+        this.saving.set(false);
+        alert('Failed to add product.');
+        console.error(err);
+      },
+    });
+  }
+
   onSelectionChange(newSet: Set<string>): void {
     this.selectedIds.set(newSet);
   }
@@ -108,32 +138,6 @@ export class HomeComponent {
 
   closeModal(): void {
     this.showAddModal.set(false);
-  }
-
-  saveProduct(): void {
-    this.saving.set(true);
-    this.productService.addProduct(this.newProduct()).subscribe({
-      next: (product) => {
-        this.products.update(list => [...list, product]);
-        this.closeModal();
-        this.saving.set(false);
-        this.newProduct.set({
-          name: '',
-          description: '',
-          category: '',
-          status: ProductStatus.Draft,
-          imageUrl: '',
-          startingPrice: 0,
-          reservePrice: null,
-          auctionStartTime: '',
-          auctionEndTime: '',
-        });
-      },
-      error: (err) => {
-        this.saving.set(false);
-        console.error('Failed to save product', err);
-      },
-    });
   }
 
   onProductChange(updated: NewProduct): void {

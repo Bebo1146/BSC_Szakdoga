@@ -1,4 +1,4 @@
-﻿namespace TokenValidation
+﻿namespace TokenValidation.TokenValidation
 {
     public sealed class TokenValidationOptions
     {

@@ -71,9 +71,56 @@ namespace OAuthStart
                 }
                 """;
 
+
+            string myBackendClient = """
+            {
+              "clientId": "my-backend-client3",
+              "name": "Backend OAuth Code Flow Client",
+              "enabled": true,
+              "protocol": "openid-connect",
+              "publicClient": false,
+              "standardFlowEnabled": true,
+              "directAccessGrantsEnabled": false,
+              "serviceAccountsEnabled": false,
+              "redirectUris": [
+                "http://localhost:5215/api/auth/callback",
+                "http://localhost:4200/auth-callback",
+                "https://oauth.pstmn.io/v1/callback"
+              ],
+              "webOrigins": [
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "http://localhost:4200"
+              ],
+              "attributes": {
+                "pkce.code.challenge.method": "S256",
+                "post.logout.redirect.uris": "http://localhost:3000"
+              }
+            }
+            """;
+
+            JsonDocument myBackendClientToRegister = JsonDocument.Parse(
+    myBackendClient,
+    new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip });
+
+            //{
+            //    "clientId": "my-backend-client",
+            //  "enabled": true,
+            //  "protocol": "openid-connect",
+            //  "publicClient": false,
+            //  "standardFlowEnabled": true,
+            //  "directAccessGrantsEnabled": false,
+            //  "serviceAccountsEnabled": false,
+            //  "redirectUris": [
+            //    "https://api.example.com/auth/callback"
+            //  ]
+            //}
+
             JsonDocument clientCredToRegister = JsonDocument.Parse(clientCredJson);
 
             ClientRegister clientRegister = new ClientRegister();
+
+            await clientRegister.RegisterAsync(myBackendClientToRegister, new Uri("http://localhost:8080/admin/realms/dev-realm/clients"), token);
 
             //try
             //{

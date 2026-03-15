@@ -43,6 +43,8 @@ export class ProductFormModalComponent {
   }
 
   onSave(): void {
+    console.log('Saving product from modal:', this.product);
+
     this.save.emit();
   }
 }

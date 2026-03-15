@@ -1,13 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
@@ -15,18 +14,25 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  username = '';
-  password = '';
   error = '';
+
+  ngOnInit(): void {
+    // Start the OAuth flow automatically when the component is loaded
+    this.onSubmit();
+  }
 
   onSubmit(): void {
     this.error = '';
-    this.authService.login(this.username, this.password).subscribe({
+    // Start OAuth flow (backend will build Keycloak URL and return it)
+    this.authService.login()
+    .subscribe({
       next: () => {
+        // navigation won't happen because browser will be redirected to Keycloak
+        // keep this here as a fallback
         this.router.navigate(['/']);
       },
       error: () => {
-        this.error = 'Invalid username or password';
+        this.error = 'Login failed';
       },
     });
   }

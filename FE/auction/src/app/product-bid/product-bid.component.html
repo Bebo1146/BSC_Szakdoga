@@ -1,0 +1,8 @@
+<div class="bid-panel">
+  <div class="bid-form">
+    <input type="number" [formControl]="amountControl" placeholder="0" />
+    <button (click)="placeBid()" [disabled]="amountControl.invalid || endsInPast">Place bid</button>
+  </div>
+
+  <div class="bid-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+</div>

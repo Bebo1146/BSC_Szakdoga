@@ -1,0 +1,9 @@
+<div class="auth-callback" style="text-align:center; padding:2rem;">
+  <ng-container *ngIf="loading">
+    <p>Finishing sign-in…</p>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && error">
+    <p>Authentication failed. Redirecting to login...</p>
+  </ng-container>
+</div>

@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  oauth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5100:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - OAuth__Issuer=http://keycloak:8080/realms/dev-realm
+      - OAuth__ClientId=my-backend-client3
+      - OAuth__ClientSecret=${OAUTH_CLIENT_SECRET:-}
+      - OAuth__RedirectUri=http://localhost:5100/api/auth/callback
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - oauth-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    command: start-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - oauth-network
+
+networks:
+  oauth-network:
+    driver: bridge
