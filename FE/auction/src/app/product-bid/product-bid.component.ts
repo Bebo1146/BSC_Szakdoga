@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -14,23 +14,33 @@ export class ProductBidComponent implements OnChanges {
   @Input() highestBid: number = 0;
   @Input() minIncrement: number = 1;
   @Input() endsAt?: string | Date;
-  @Input() isLoggedIn: boolean = false;
+
+  // add currentBid input so template bindings work
+  @Input() currentBid: number = 0;
 
   @Output() bidPlaced = new EventEmitter<{ productId: string, amount: number }>();
 
   form: FormGroup;
-  amountControl: FormControl;
+  // don't reference this.currentBid at declaration time
+  amountControl!: FormControl;
   errorMsg: string | null = null;
 
   constructor(private fb: FormBuilder) {
+    // create control without min validator (will be set/updated in ngOnChanges)
+    this.amountControl = new FormControl(null, [Validators.required]);
+    // link the control into the form so this.form.invalid works
     this.form = this.fb.group({
-      amount: [null, [Validators.required]]
+      amount: this.amountControl
     });
-    this.amountControl = this.form.get('amount') as FormControl;
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    const min = (this.highestBid || 0) + (this.minIncrement || 1);
+    // compute the minimum allowed value:
+    // ensure it's at least currentBid and at least highestBid + minIncrement
+    const minFromHighest = (this.highestBid || 0) + (this.minIncrement || 1);
+    const min = Math.max(this.currentBid || 0, minFromHighest);
+
+    // set validators once (required + min)
     this.amountControl.setValidators([Validators.required, Validators.min(min)]);
     this.amountControl.updateValueAndValidity();
   }
@@ -43,17 +53,13 @@ export class ProductBidComponent implements OnChanges {
 
   placeBid() {
     this.errorMsg = null;
-
-    if (!this.isLoggedIn) {
-      this.errorMsg = 'You must be logged in to bid.';
-      return;
-    }
-
+    
     if (this.endsInPast) {
       this.errorMsg = 'The auction has ended.';
       return;
     }
 
+    // validate the amount control (form is tied to the control)
     if (this.form.invalid) {
       this.errorMsg = 'Invalid amount.';
       this.amountControl.markAsTouched();

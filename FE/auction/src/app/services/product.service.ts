@@ -27,9 +27,14 @@ export class ProductService {
     });
   }
 
-  addMultipleProducts(products: NewProduct[]): Observable<Product[]> {
-    console.log('Adding multiple products:', products);
+  // new: GET /api/BffProxy/products/my-bids
+  getMyBids(): Observable<Product[]> {
+    return this.http.get<Product[]>(`${this.apiUrl}/products/my-bids`, {
+      ...this.defaultOptions,
+    });
+  }
 
+  addMultipleProducts(products: NewProduct[]): Observable<Product[]> {
     return this.http.post<Product[]>(`${this.apiUrl}/products/addMultiple`, products, {
       ...this.defaultOptions,
     });

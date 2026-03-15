@@ -1,6 +1,11 @@
 <div class="bid-panel">
   <div class="bid-form">
-    <input type="number" [formControl]="amountControl" placeholder="0" />
+    <input
+      type="number"
+      [formControl]="amountControl"
+      [placeholder]="currentBid"
+      [attr.min]="currentBid"
+      (wheel)="$event.target.blur()" />
     <button (click)="placeBid()" [disabled]="amountControl.invalid || endsInPast">Place bid</button>
   </div>
 

@@ -78,16 +78,15 @@
 
         <td class="muted">{{ p.sellerUsername }}</td>
 
-        <!-- Licit UI oszlop (kisebb helyen vagy kinyitva) -->
         <td>
-          <app-product-bid
-            [productId]="p.id"
-            
-            
-            [endsAt]="p.auctionEndTime"
-            
-            (bidPlaced)="onBidPlaced($event, p)">
-          </app-product-bid>
+        <app-product-bid
+          [productId]="p.id"
+          [currentBid]="p.currentBid ?? p.startingPrice"
+          [highestBid]="p.currentBid ?? p.startingPrice"
+          [minIncrement]="1"
+          [endsAt]="p.auctionEndTime"
+          (bidPlaced)="onBidPlaced($event, p)">
+        </app-product-bid>
         </td>
       </tr>
 

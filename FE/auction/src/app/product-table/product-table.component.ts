@@ -1,10 +1,12 @@
 import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Product, ProductStatus } from '../models/product.model';
 import { BidService } from '../services/bid.service';
 import { AuthService } from '../services/auth.service';
 import { ProductBidComponent } from '../product-bid/product-bid.component';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-product-table',
@@ -25,6 +27,7 @@ export class ProductTableComponent {
   readonly ProductStatus = ProductStatus;
 
   private readonly bidService = inject(BidService);
+  private readonly cdr = inject(ChangeDetectorRef);
   public authService = inject(AuthService);
 
   isAllSelected(): boolean {
@@ -83,19 +86,18 @@ export class ProductTableComponent {
     return `$${value.toFixed(2)}`;
   }
 
-  onBidPlaced(event: { productId: string; amount: number }, row: Product) {
-    this.bidService.placeBid(event.productId, event.amount).subscribe({
-      next: (res) => {
-        // egyszerű frissítés: állítsd be a helyi legmagasabb licitet a válasz vagy a beadott összeg alapján
-        if (row && row.id === event.productId) {
-          //row.highestBid = Math.max(row.highestBid || 0, event.amount);
-        }
-        // opcionális: értesítés / toast
-      },
-      error: (err) => {
-        console.error('Licit hiba', err);
-        // opcionális: hibajelzés a felhasználónak
-      }
-    });
+  async onBidPlaced(event: { productId: string; amount: number }, row: Product) {
+    try {
+      await firstValueFrom(this.bidService.placeBid(event.productId, event.amount));
+
+      const updated = await firstValueFrom(this.bidService.getProductById(event.productId));
+
+      this.products = this.products.map(p => (p.id === updated.id ? updated : p));
+
+      this.cdr.detectChanges();
+    } catch (err) {
+      // handle/log error as appropriate
+      console.error('Failed to place bid / refresh product:', err);
+    }
   }
 }

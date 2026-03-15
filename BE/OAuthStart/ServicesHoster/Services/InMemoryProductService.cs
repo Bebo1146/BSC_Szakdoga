@@ -175,6 +175,10 @@ namespace ServicesHoster.Services
             }
         });
 
+        // In-memory bid storage and winning-bid tracking
+        private static readonly ConcurrentDictionary<string, BidDto> _bids = new();
+        private static readonly ConcurrentDictionary<string, string> _winningBidByProduct = new();
+
         public Task<IEnumerable<ProductDto>> GetAllAsync()
         {
             return Task.FromResult(Products.AsEnumerable());
@@ -226,6 +230,75 @@ namespace ServicesHoster.Services
         {
             IEnumerable<ProductDto> userProducts = Products.Where(p => p.SellerId == userId);
             return Task.FromResult(userProducts.AsEnumerable());
+        }
+
+        public Task<(bool Success, string? Error, BidDto? Bid)> PlaceBidAsync(string productId, decimal amount, string bidderId, string bidderUsername)
+        {
+            ProductDto? product = Products.FirstOrDefault(p => p.Id == productId);
+            if (product is null)
+            {
+                return Task.FromResult<(bool, string?, BidDto?)>((false, "Product not found", null));
+            }
+
+            //if (!product.IsActive)
+            //{
+            //    return Task.FromResult<(bool, string?, BidDto?)>((false, "Auction is not active", null));
+            //}
+
+            if (product.SellerId == bidderId)
+            {
+                return Task.FromResult<(bool, string?, BidDto?)>((false, "Seller cannot place bids on their own product", null));
+            }
+
+            decimal currentThreshold = (product.CurrentBid.HasValue && product.CurrentBid.Value > 0m) ? product.CurrentBid.Value : product.StartingPrice;
+            if (amount <= currentThreshold)
+            {
+                return Task.FromResult<(bool, string?, BidDto?)>((false, $"Bid must be greater than current bid ({currentThreshold:C})", null));
+            }
+
+            DateTime now = DateTime.UtcNow;
+            string bidId = $"b-{Guid.NewGuid():N}";
+
+            // Update previous winning bid if exists
+            if (_winningBidByProduct.TryGetValue(productId, out string? previousWinningId) && !string.IsNullOrEmpty(previousWinningId))
+            {
+                if (_bids.TryGetValue(previousWinningId, out BidDto? previousBid) && previousBid is not null && previousBid.IsWinningBid)
+                {
+                    // mark previous as not winning
+                    _bids[previousWinningId] = previousBid with { IsWinningBid = false };
+                }
+            }
+
+            // Create and store the new winning bid
+            BidDto newBid = new(bidId, productId, bidderId, bidderUsername, amount, now, true);
+            _bids[bidId] = newBid;
+            _winningBidByProduct[productId] = bidId;
+
+            // Update product state
+            product.CurrentBid = amount;
+            product.TotalBids += 1;
+            product.HighestBidderId = bidderId;
+            product.HighestBidderUsername = bidderUsername;
+            product.UpdatedAt = now;
+
+            return Task.FromResult<(bool, string?, BidDto?)>((true, null, newBid));
+        }
+
+        public Task<IEnumerable<BidDto>> GetBidsAsync(string productId)
+        {
+            IEnumerable<BidDto> bids = _bids.Values
+                .Where(b => b.ProductId == productId)
+                .OrderBy(b => b.BidTime)
+                .AsEnumerable();
+
+            return Task.FromResult(bids);
+        }
+
+        public Task<IEnumerable<ProductDto>> GetProductsByBidderAsync(string bidderId)
+        {
+            // Get all products where the given bidder is the highest bidder
+            var productsBidder = Products.Where(p => p.HighestBidderId == bidderId);
+            return Task.FromResult(productsBidder);
         }
     }
 }

@@ -1,0 +1,26 @@
+<div class="app">
+  <app-navbar></app-navbar>
+
+  <main class="page">
+    <h1>My Bids</h1>
+
+    <app-product-toolbar
+      [query]="query()"
+      [statusFilter]="statusFilter()"
+      [sort]="sort()"
+      searchPlaceholder="Search my bids..."
+      (queryChange)="query.set($event)"
+      (statusFilterChange)="statusFilter.set($event)"
+      (sortChange)="sort.set($event)"
+    ></app-product-toolbar>
+
+    <app-product-table
+      [products]="filtered()"
+      [selectedIds]="selectedIds()"
+      [loading]="loading()"
+      [error]="error()"
+      (selectionChange)="onSelectionChange($event)"
+      (productClick)="onProductClick($event)"
+    ></app-product-table>
+  </main>
+</div>

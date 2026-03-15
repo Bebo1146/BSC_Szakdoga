@@ -126,6 +126,27 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
+        // NEW: GET api/bff/products/my-bids -> proxies to ProductsService /my-bids
+        [HttpGet("products/my-bids")]
+        public async Task<IActionResult> GetMyBids()
+        {
+            (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
+            if (!ok || session == null) return Unauthorized();
+
+            HttpClient client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+
+            HttpResponseMessage resp = await client.GetAsync($"{ProductsServiceBase}/my-bids");
+            string content = await resp.Content.ReadAsStringAsync();
+
+            return new ContentResult
+            {
+                Content = content,
+                ContentType = "application/json",
+                StatusCode = (int)resp.StatusCode
+            };
+        }
+
         // POST api/bff/products/addMultiple
         [HttpPost("products/addMultiple")]
         public async Task<IActionResult> AddMultiple([FromBody] JsonElement body)
@@ -140,6 +161,30 @@ namespace OAuthCodeFlowService.Controllers
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
             HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/addMultiple", content);
+            string respContent = await resp.Content.ReadAsStringAsync();
+
+            return new ContentResult
+            {
+                Content = respContent,
+                ContentType = "application/json",
+                StatusCode = (int)resp.StatusCode
+            };
+        }
+
+        // POST api/bff/products/{id}/bid
+        [HttpPost("products/{id}/bid")]
+        public async Task<IActionResult> PlaceBid(string id, [FromBody] JsonElement body)
+        {
+            (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
+            if (!ok || session == null) return Unauthorized();
+
+            HttpClient client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+
+            string json = JsonSerializer.Serialize(body);
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/{Uri.EscapeDataString(id)}/bid", content);
             string respContent = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult

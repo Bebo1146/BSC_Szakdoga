@@ -1,14 +1,29 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Product } from '../models/product.model';
+
+interface PlaceBidResponse {
+  product: any;
+  bid: any;
+}
 
 @Injectable({ providedIn: 'root' })
 export class BidService {
-  private base = '/api'; // állítsd a backend URL-t
+  // use inject() and a relative apiUrl so the dev proxy forwards requests
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = '/api/BffProxy';
 
-  constructor(private http: HttpClient) {}
+  // POST /api/products/{id}/bid with { Amount: number } body
+  placeBid(productId: string, amount: number): Observable<PlaceBidResponse> {
+    const url = `${this.apiUrl}/products/${encodeURIComponent(productId)}/bid`;
+    const body = { Amount: amount };
+    return this.http.post<PlaceBidResponse>(url, body);
+  }
 
-  placeBid(productId: string, amount: number): Observable<any> {
-    return this.http.post(`${this.base}/bids`, { productId, amount });
+  // GET /api/products/{id} - returns updated product
+  getProductById(productId: string): Observable<Product> {
+    const url = `${this.apiUrl}/products/${encodeURIComponent(productId)}`;
+    return this.http.get<Product>(url);
   }
 }

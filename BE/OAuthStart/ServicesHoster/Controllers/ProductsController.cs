@@ -39,6 +39,20 @@ namespace ServicesHoster.Controllers
             return Ok(products);
         }
 
+        // NEW: products the current user has placed bids on
+        [HttpGet("my-bids")]
+        public async Task<IActionResult> GetProductsIBidOn()
+        {
+            string bidderId = JwtClaimReader.GetNameFromJwt(JwtClaimReader.GetTokenFromRequest(Request));
+            if (string.IsNullOrEmpty(bidderId))
+            {
+                return Unauthorized("User ID not found in token");
+            }
+
+            IEnumerable<ProductDto> products = await _productService.GetProductsByBidderAsync(bidderId);
+            return Ok(products);
+        }
+
         [HttpPost("addMultiple")]
         public async Task<IActionResult> AddMultiple([FromBody] List<ProductDto>? products)
         {
@@ -73,6 +87,44 @@ namespace ServicesHoster.Controllers
         {
             ProductDto? product = await _productService.GetByIdAsync(id);
             return product is null ? NotFound() : Ok(product);
+        }
+
+        // Bid request DTO
+        public record BidRequest(decimal Amount);
+
+        /// <summary>
+        /// Place a bid on a product.
+        /// </summary>
+        [HttpPost("{id}/bid")]
+        public async Task<IActionResult> PlaceBid(string id, [FromBody] BidRequest? request)
+        {
+            if (request is null)
+            {
+                return BadRequest("Invalid bid request.");
+            }
+
+            if (request.Amount <= 0m)
+            {
+                return BadRequest("Bid amount must be greater than zero.");
+            }
+
+            string bidderId = JwtClaimReader.GetNameFromJwt(JwtClaimReader.GetTokenFromRequest(Request));
+            if (string.IsNullOrEmpty(bidderId))
+            {
+                return Unauthorized("User ID not found in token");
+            }
+
+            string bidderUsername = JwtClaimReader.GetPreferredNameFromJwt(JwtClaimReader.GetTokenFromRequest(Request)) ?? bidderId;
+
+            var (success, error, bid) = await _productService.PlaceBidAsync(id, request.Amount, bidderId, bidderUsername);
+            if (!success)
+            {
+                return BadRequest(new { Message = "Bid failed", Reason = error });
+            }
+
+            // Return the updated product and the created bid
+            ProductDto? updatedProduct = await _productService.GetByIdAsync(id);
+            return CreatedAtAction(nameof(GetById), new { id = id }, new { Product = updatedProduct, Bid = bid });
         }
 
         [HttpGet("/health")]

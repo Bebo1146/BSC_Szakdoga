@@ -1,0 +1,17 @@
+:host {
+  display: block;
+}
+
+.page {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+h1 {
+  margin: 10px 0 18px;
+  font-size: 44px;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  transition: color 0.3s
+}
