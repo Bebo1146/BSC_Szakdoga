@@ -1,0 +1,91 @@
+<div class="payment-page">
+  <div *ngIf="loading" class="loading">Processing...</div>
+
+  <form [formGroup]="form" (ngSubmit)="pay()" class="payment-form">
+    <h2 class="form-title">Card details</h2>
+
+    <div class="card-preview">
+      <span class="card-chip">💳</span>
+      <span class="card-number-preview">
+        {{ form.value.cardNumber || '•••• •••• •••• ••••' }}
+      </span>
+      <div class="card-bottom">
+        <span>{{ form.value.cardHolder || 'CARD HOLDER' }}</span>
+        <span>{{ form.value.expiry || 'MM/YY' }}</span>
+      </div>
+    </div>
+
+    <label>
+      Card holder name
+      <input
+        type="text"
+        formControlName="cardHolder"
+        placeholder="John Doe"
+        autocomplete="cc-name"
+      />
+      <span class="field-error" *ngIf="form.get('cardHolder')?.invalid && form.get('cardHolder')?.touched">
+        Required
+      </span>
+    </label>
+
+    <label>
+      Card number
+      <input
+        type="text"
+        formControlName="cardNumber"
+        placeholder="1234 5678 9012 3456"
+        maxlength="19"
+        autocomplete="cc-number"
+        (input)="formatCardNumber($event)"
+      />
+      <span class="field-error" *ngIf="form.get('cardNumber')?.invalid && form.get('cardNumber')?.touched">
+        Enter a valid 16-digit card number
+      </span>
+    </label>
+
+    <div class="row-fields">
+      <label>
+        Expiry
+        <input
+          type="text"
+          formControlName="expiry"
+          placeholder="MM/YY"
+          maxlength="5"
+          autocomplete="cc-exp"
+          (input)="formatExpiry($event)"
+        />
+        <span class="field-error" *ngIf="form.get('expiry')?.invalid && form.get('expiry')?.touched">
+          MM/YY format
+        </span>
+      </label>
+
+      <label>
+        CVC
+        <input
+          type="text"
+          formControlName="cvc"
+          placeholder="123"
+          maxlength="4"
+          autocomplete="cc-csc"
+        />
+        <span class="field-error" *ngIf="form.get('cvc')?.invalid && form.get('cvc')?.touched">
+          3-4 digits
+        </span>
+      </label>
+    </div>
+
+    <div class="amount-row">
+      <strong>Total:</strong>
+      <span>{{ form.value.amount | number:'1.2-2' }}</span>
+    </div>
+
+    <div class="actions">
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Processing...' : 'Pay now' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="error" *ngIf="error">{{ error }}</div>
+  <div class="success" *ngIf="success">{{ success }}</div>
+</div>

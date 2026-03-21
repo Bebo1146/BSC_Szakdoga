@@ -139,7 +139,7 @@ namespace ServicesHoster.Services
                 AuctionStartTime = DateTime.UtcNow.AddDays(-7),
                 AuctionEndTime = DateTime.UtcNow.AddDays(-1),
                 TotalBids = 4,
-                HighestBidderId = "user-555",
+                HighestBidderId = "kicsi kuki",
                 HighestBidderUsername = "art_collector",
                 SellerId = "system",
                 SellerUsername = "admin",

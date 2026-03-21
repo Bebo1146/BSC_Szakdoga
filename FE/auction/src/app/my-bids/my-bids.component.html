@@ -4,6 +4,12 @@
   <main class="page">
     <h1>My Bids</h1>
 
+    <!-- If you render a list of bids, link each item to the payments page:
+         [routerLink]="['/payments']" [queryParams]="{ bidId: bid.id }" -->
+    <p>
+      <a routerLink="/payments">Pay for winning bids</a>
+    </p>
+
     <app-product-toolbar
       [query]="query()"
       [statusFilter]="statusFilter()"
@@ -19,6 +25,7 @@
       [selectedIds]="selectedIds()"
       [loading]="loading()"
       [error]="error()"
+      [showPay]="true"
       (selectionChange)="onSelectionChange($event)"
       (productClick)="onProductClick($event)"
     ></app-product-table>

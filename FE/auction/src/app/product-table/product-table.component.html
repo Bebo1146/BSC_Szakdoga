@@ -79,14 +79,29 @@
         <td class="muted">{{ p.sellerUsername }}</td>
 
         <td>
-        <app-product-bid
-          [productId]="p.id"
-          [currentBid]="p.currentBid ?? p.startingPrice"
-          [highestBid]="p.currentBid ?? p.startingPrice"
-          [minIncrement]="1"
-          [endsAt]="p.auctionEndTime"
-          (bidPlaced)="onBidPlaced($event, p)">
-        </app-product-bid>
+          <!-- Show bid controls while auction is active; once ended show Pay button (when parent enables showPay) -->
+          <ng-container *ngIf="!p.hasEnded; else payBlock">
+            <app-product-bid
+              [productId]="p.id"
+              [currentBid]="p.currentBid ?? p.startingPrice"
+              [highestBid]="p.currentBid ?? p.startingPrice"
+              [minIncrement]="1"
+              [endsAt]="p.auctionEndTime"
+              (bidPlaced)="onBidPlaced($event, p)">
+            </app-product-bid>
+          </ng-container>
+
+          <ng-template #payBlock>
+            <div class="pay-wrapper" *ngIf="showPay">
+              <button
+                class="pay-link"
+                type="button"
+                (click)="onPay($event, p)"
+              >
+                Pay
+              </button>
+            </div>
+          </ng-template>
         </td>
       </tr>
 

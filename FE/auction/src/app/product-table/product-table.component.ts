@@ -7,6 +7,7 @@ import { BidService } from '../services/bid.service';
 import { AuthService } from '../services/auth.service';
 import { ProductBidComponent } from '../product-bid/product-bid.component';
 import { firstValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-table',
@@ -20,7 +21,10 @@ export class ProductTableComponent {
   @Input() selectedIds = new Set<string>();
   @Input() loading = false;
   @Input() error: string | null = null;
-  
+
+  // show/hide the Pay button (default: hidden)
+  @Input() showPay = false;
+
   @Output() selectionChange = new EventEmitter<Set<string>>();
   @Output() productClick = new EventEmitter<Product>();
 
@@ -29,6 +33,7 @@ export class ProductTableComponent {
   private readonly bidService = inject(BidService);
   private readonly cdr = inject(ChangeDetectorRef);
   public authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   isAllSelected(): boolean {
     return this.products.length > 0 && this.products.every(p => this.selectedIds.has(p.id));
@@ -99,5 +104,16 @@ export class ProductTableComponent {
       // handle/log error as appropriate
       console.error('Failed to place bid / refresh product:', err);
     }
+  }
+
+  // Navigate to payments with the product id as bidId.
+  // Stops propagation so the row click handler won't run.
+  onPay(event: Event, product: any) {
+    event.stopPropagation();
+    const bidId = product?.id;
+    if (!bidId) {
+      return;
+    }
+    this.router.navigate(['/payments'], { queryParams: { bidId } });
   }
 }

@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { Product } from '../models/product.model';
+import { map } from 'rxjs/operators';
 
 interface PlaceBidResponse {
   product: any;
@@ -25,5 +26,17 @@ export class BidService {
   getProductById(productId: string): Observable<Product> {
     const url = `${this.apiUrl}/products/${encodeURIComponent(productId)}`;
     return this.http.get<Product>(url);
+  }
+
+  // bidId is the product id — fetch product and map to bid shape
+  getBidById(bidId: string): Observable<any> {
+    return this.getProductById(bidId).pipe(
+      map((p: any) => ({
+        id: bidId,
+        productId: p?.id,
+        amount: p?.currentBid ?? p?.startingPrice ?? 0,
+        product: p,
+      }))
+    );
   }
 }

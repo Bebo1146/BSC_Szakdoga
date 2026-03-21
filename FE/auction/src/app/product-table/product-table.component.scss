@@ -12,6 +12,37 @@
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
+.card-list {
+  display: grid;
+  gap: 12px;
+}
+
+.card-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.card-content { cursor: pointer; }
+
+.card-actions .pay-link {
+  display: inline-block;
+  padding: 8px 12px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.card-actions .pay-link:hover {
+  background: var(--button-primary-hover);
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -170,4 +201,75 @@ input[type="checkbox"] {
   width: 16px;
   height: 16px;
   accent-color: var(--accent-color);
+}
+
+/* Keep pay button right-aligned inside its table cell */
+.table tbody td:last-child {
+  /* align inline/inline-flex children to the right */
+  text-align: right;
+  /* give the column a stable max width so it doesn't stretch the table */
+  width: 160px;
+  min-width: 100px;
+  padding-right: 12px;
+  box-sizing: border-box;
+}
+
+/* ensure the wrapper uses flex-end */
+.pay-wrapper {
+  display: inline-flex; /* already set, reaffirm */
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* tighter layout on small screens */
+@media (max-width: 640px) {
+  .table tbody td:last-child {
+    width: auto;
+    min-width: 0;
+    padding-right: 8px;
+  }
+
+  .pay-wrapper .pay-link {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Style both <a class="pay-link"> and <button class="pay-link"> consistently */
+.pay-wrapper .pay-link,
+.card-actions .pay-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  border-radius: 6px;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.06s ease;
+  box-shadow: none;
+}
+
+.pay-wrapper .pay-link:hover,
+.card-actions .pay-link:hover {
+  background: var(--button-primary-hover);
+}
+
+.pay-wrapper .pay-link:focus,
+.card-actions .pay-link:focus {
+  outline: 2px solid rgba(99,102,241,0.15);
+  outline-offset: 2px;
+}
+
+/* Ensure button element doesn't inherit default appearance */
+.pay-wrapper .pay-link[type="button"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-top: 7px; /* minor visual tweak to vertically center text in some browsers */
 }

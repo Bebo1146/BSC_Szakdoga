@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServicesHoster", "ServicesH
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OAuthCodeFlowService", "OAuthCodeFlowService\OAuthCodeFlowService.csproj", "{EE0D6599-6288-4B1C-8CA6-214EAC397770}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payments", "Payments\Payments.csproj", "{3FE0EC58-D6DA-4E2D-94DD-084DB22B204A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{EE0D6599-6288-4B1C-8CA6-214EAC397770}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE0D6599-6288-4B1C-8CA6-214EAC397770}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE0D6599-6288-4B1C-8CA6-214EAC397770}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FE0EC58-D6DA-4E2D-94DD-084DB22B204A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FE0EC58-D6DA-4E2D-94DD-084DB22B204A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FE0EC58-D6DA-4E2D-94DD-084DB22B204A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FE0EC58-D6DA-4E2D-94DD-084DB22B204A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
