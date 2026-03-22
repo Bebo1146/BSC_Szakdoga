@@ -7,6 +7,8 @@ import { ProductTableComponent } from '../product-table/product-table.component'
 import { ProductToolbarComponent } from '../product-toolbar/product-toolbar.component';
 import { ProductService } from '../services/product.service';
 import { Product, ProductStatus, TransactionStatus } from '../models/product.model';
+import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-my-bids',
@@ -17,6 +19,8 @@ import { Product, ProductStatus, TransactionStatus } from '../models/product.mod
 })
 export class MyBidsComponent implements OnInit {
   private readonly productService = inject(ProductService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   readonly ProductStatus = ProductStatus;
   readonly TransactionStatus = TransactionStatus;
@@ -31,51 +35,33 @@ export class MyBidsComponent implements OnInit {
   products = signal<Product[]>([]);
 
   filtered = computed(() => {
-    let rows = this.products();
-    const q = this.query().toLowerCase();
-    if (q) {
-      rows = rows.filter(
+    const currentUserId = this.authService.getUserIdSync();
+    const currentUsername = this.authService.getPreferredNameSync();
+
+    return this.products()
+      .filter((p: any) => {
+        // only show expired items if current user is the highest bidder
+        const isExpired = p.status === 'expired' || p.status === ProductStatus.Expired;
+        if (isExpired) {
+          return p.highestBidderId === currentUserId
+            || p.highestBidderUsername === currentUsername;
+        }
+
+        return true;
+      })
+      .filter(
         (r) =>
-          r.name.toLowerCase().includes(q) ||
-          r.description?.toLowerCase().includes(q) ||
-          r.category?.toLowerCase().includes(q)
+          r.name.toLowerCase().includes(this.query().toLowerCase()) ||
+          r.description?.toLowerCase().includes(this.query().toLowerCase()) ||
+          r.category?.toLowerCase().includes(this.query().toLowerCase())
       );
-    }
-    const sf = this.statusFilter();
-    if (sf !== 'All') {
-      const statusMap: Record<string, ProductStatus> = {
-        Active: ProductStatus.Active,
-        Draft: ProductStatus.Draft,
-        Sold: ProductStatus.Sold,
-        Expired: ProductStatus.Expired,
-        Cancelled: ProductStatus.Cancelled,
-        UnderReview: ProductStatus.UnderReview,
-      };
-      rows = rows.filter((r) => r.status === statusMap[sf]);
-    }
-
-    // basic sort implementations matching home.component behavior
-    const s = this.sort();
-    switch (s) {
-      case 'Newest':
-        rows = rows.slice().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        break;
-      case 'Name A-Z':
-        rows = rows.slice().sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'Ending Soon':
-        rows = rows.slice().sort((a, b) => (a.auctionEndTime > b.auctionEndTime ? 1 : -1));
-        break;
-      case 'Most Bids':
-        rows = rows.slice().sort((a, b) => (b.totalBids || 0) - (a.totalBids || 0));
-        break;
-    }
-
-    return rows;
   });
 
   ngOnInit(): void {
     void this.loadProducts();
+
+    console.log('userId:', this.authService.getUserIdSync());
+    console.log('preferredName:', this.authService.getPreferredNameSync());
   }
 
   loadProducts(): void {
@@ -101,5 +87,9 @@ export class MyBidsComponent implements OnInit {
 
   onProductClick(p: Product): void {
     console.log('product clicked', p);
+  }
+
+  onFeedbackClick(p: Product): void {
+    this.router.navigate(['/feedback'], { queryParams: { productId: p.id } });
   }
 }

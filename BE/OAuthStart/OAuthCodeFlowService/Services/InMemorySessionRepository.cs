@@ -8,7 +8,8 @@ namespace OAuthCodeFlowService.Services
         string? RefreshToken,
         string? IdToken,
         DateTimeOffset ExpiresAt,
-        string? PreferredName);
+        string? PreferredName,
+        string? UserId);
 
     public interface ISessionRepository
     {
@@ -32,7 +33,6 @@ namespace OAuthCodeFlowService.Services
         public SessionInfo? Get(string id) =>
             _store.TryGetValue(id, out SessionInfo? value) ? value : null;
 
-        // Replace session contents for an existing id
         public void Update(string id, SessionInfo info)
         {
             if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException(nameof(id));

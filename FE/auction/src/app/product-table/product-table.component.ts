@@ -24,9 +24,10 @@ export class ProductTableComponent {
 
   // show/hide the Pay button (default: hidden)
   @Input() showPay = false;
-
+  @Input() showFeedback = false;
   @Output() selectionChange = new EventEmitter<Set<string>>();
   @Output() productClick = new EventEmitter<Product>();
+  @Output() feedbackClick = new EventEmitter<Product>();
 
   readonly ProductStatus = ProductStatus;
 

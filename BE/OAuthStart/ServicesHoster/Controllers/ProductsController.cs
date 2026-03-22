@@ -127,6 +127,37 @@ namespace ServicesHoster.Controllers
             return CreatedAtAction(nameof(GetById), new { id = id }, new { Product = updatedProduct, Bid = bid });
         }
 
+        [HttpPost("mark-sold")]
+        public async Task<IActionResult> MarkAsSold([FromBody] List<string>? ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                return BadRequest("No product IDs provided.");
+            }
+
+            List<ProductDto> updatedProducts = [];
+            List<object> failedProducts = [];
+
+            foreach (string id in ids.Where(id => !string.IsNullOrWhiteSpace(id)))
+            {
+                var (success, error, product) = await _productService.MarkAsSoldAsync(id);
+                if (success && product is not null)
+                {
+                    updatedProducts.Add(product);
+                }
+                else
+                {
+                    failedProducts.Add(new { Id = id, Message = error });
+                }
+            }
+
+            return Ok(new
+            {
+                UpdatedProducts = updatedProducts,
+                FailedProducts = failedProducts
+            });
+        }
+
         [HttpGet("/health")]
         [AllowAnonymous]
         public IActionResult Health()

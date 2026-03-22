@@ -12,7 +12,11 @@ export interface MeResponse {
   expiresAt: string;
   hasRefreshToken: boolean;
   preferredName?: string | null;
+  userId?: string | null;
 }
+
+const STORAGE_PREFERRED_NAME = 'auth.preferredName';
+const STORAGE_USER_ID = 'auth.userId';
 
 @Injectable({
   providedIn: 'root',
@@ -21,30 +25,35 @@ export class AuthService {
   private backendBase = 'http://localhost:5215';
   private frontendCallback = 'http://localhost:4200/auth-callback';
 
-  private static readonly PreferredNameKey = 'app.preferredName';
-
-  private _preferredName = new BehaviorSubject<string | null>(AuthService.readPreferredNameFromStorage());
+  // seed BehaviorSubjects from localStorage so values survive page refresh
+  private _preferredName = new BehaviorSubject<string | null>(
+    localStorage.getItem(STORAGE_PREFERRED_NAME)
+  );
   public preferredName$ = this._preferredName.asObservable();
 
-  // timer id for scheduled refresh
+  private _userId = new BehaviorSubject<string | null>(
+    localStorage.getItem(STORAGE_USER_ID)
+  );
+  public userId$ = this._userId.asObservable();
+
   private keepAliveTimer: number | null = null;
 
   constructor(private http: HttpClient) {}
 
-  private static readPreferredNameFromStorage(): string | null {
-    try {
-      return localStorage.getItem(AuthService.PreferredNameKey) ?? null;
-    } catch {
-      return null;
-    }
-  }
+  private setSession(preferredName: string | null, userId: string | null): void {
+    this._preferredName.next(preferredName);
+    this._userId.next(userId);
 
-  private static writePreferredNameToStorage(name: string | null): void {
-    try {
-      if (name === null) localStorage.removeItem(AuthService.PreferredNameKey);
-      else localStorage.setItem(AuthService.PreferredNameKey, name);
-    } catch {
-      // ignore storage errors
+    if (preferredName) {
+      localStorage.setItem(STORAGE_PREFERRED_NAME, preferredName);
+    } else {
+      localStorage.removeItem(STORAGE_PREFERRED_NAME);
+    }
+
+    if (userId) {
+      localStorage.setItem(STORAGE_USER_ID, userId);
+    } else {
+      localStorage.removeItem(STORAGE_USER_ID);
     }
   }
 
@@ -53,9 +62,7 @@ export class AuthService {
     return this.http
       .post<AuthorizationUrlResponse>(`${this.backendBase}/api/auth/authorize`, body, { withCredentials: true })
       .pipe(
-        tap((res) => {
-          window.location.assign(res.authorizationUrl);
-        }),
+        tap((res) => { window.location.assign(res.authorizationUrl); }),
         map(() => void 0)
       );
   }
@@ -64,17 +71,12 @@ export class AuthService {
   handleFrontendCallback(): Observable<boolean> {
     return this.getSession().pipe(
       tap((session) => {
-        const name = session.preferredName ?? null;
-        this._preferredName.next(name);
-        AuthService.writePreferredNameToStorage(name);
-
-        // schedule keep-alive based on expiresAt returned by server
+        this.setSession(session.preferredName ?? null, session.userId ?? null);
         this.scheduleSessionRefresh(session.expiresAt);
       }),
       map(() => true),
       catchError(() => {
-        this._preferredName.next(null);
-        AuthService.writePreferredNameToStorage(null);
+        this.setSession(null, null);
         this.clearScheduledRefresh();
         return of(false);
       })
@@ -88,15 +90,13 @@ export class AuthService {
   logout(): Observable<void> {
     return this.http.get<{ logoutUrl: string }>(`${this.backendBase}/api/auth/logout-url`, { withCredentials: true }).pipe(
       tap((res) => {
-        this._preferredName.next(null);
-        AuthService.writePreferredNameToStorage(null);
+        this.setSession(null, null);
         this.clearScheduledRefresh();
         if (res?.logoutUrl) window.location.href = res.logoutUrl;
       }),
       map(() => void 0),
       catchError(() => {
-        this._preferredName.next(null);
-        AuthService.writePreferredNameToStorage(null);
+        this.setSession(null, null);
         this.clearScheduledRefresh();
         return of(void 0);
       })
@@ -109,6 +109,10 @@ export class AuthService {
 
   getPreferredNameSync(): string | null {
     return this._preferredName.getValue();
+  }
+
+  getUserIdSync(): string | null {
+    return this._userId.getValue();
   }
 
   // --- keep-alive scheduling ------------------------------------------------
@@ -126,17 +130,11 @@ export class AuthService {
 
     this.keepAliveTimer = window.setTimeout(async () => {
       try {
-        // call backend to refresh session info (server refreshes tokens on demand)
         const session = await firstValueFrom(this.getSession());
-        const name = session.preferredName ?? null;
-        this._preferredName.next(name);
-        AuthService.writePreferredNameToStorage(name);
-        // reschedule based on new expiry
+        this.setSession(session.preferredName ?? null, session.userId ?? null);
         this.scheduleSessionRefresh(session.expiresAt);
       } catch {
-        // on failure clear local state — user will be redirected by interceptor or UI
-        this._preferredName.next(null);
-        AuthService.writePreferredNameToStorage(null);
+        this.setSession(null, null);
         this.clearScheduledRefresh();
       }
     }, delay);

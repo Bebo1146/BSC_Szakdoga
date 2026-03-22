@@ -77,6 +77,9 @@ export class ProductComponent {
     const status = this.statusFilter();
     let rows = this.products();
 
+    // only show Active items in the public product listing
+    rows = rows.filter((r) => r.status === ProductStatus.Active);
+
     if (status !== 'All') {
       const statusEnum = ProductStatus[status as keyof typeof ProductStatus];
       rows = rows.filter((r) => r.status === statusEnum);

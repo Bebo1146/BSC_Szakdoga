@@ -15,5 +15,8 @@ namespace ServicesHoster.Services
 
         // Get products that a given bidder has placed bids on
         Task<IEnumerable<ProductDto>> GetProductsByBidderAsync(string bidderId);
+
+        // Mark a product as sold
+        Task<(bool Success, string? Error, ProductDto? Product)> MarkAsSoldAsync(string id);
     }
 }

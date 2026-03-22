@@ -56,7 +56,13 @@ namespace OAuthCodeFlowService.Controllers
                 {
                     TokenValidation.Jwt.TokenResponse refreshed = await _tokenService.RefreshTokenAsync(session.RefreshToken);
                     DateTimeOffset newExpires = DateTimeOffset.UtcNow.AddSeconds(refreshed.ExpiresIn > 0 ? refreshed.ExpiresIn : 3600);
-                    SessionInfo updated = new SessionInfo(refreshed.AccessToken, refreshed.RefreshToken, refreshed.IdToken, newExpires, session.PreferredName);
+                    SessionInfo updated = new SessionInfo(
+                        refreshed.AccessToken,
+                        refreshed.RefreshToken,
+                        refreshed.IdToken,
+                        newExpires,
+                        session.PreferredName,
+                        session.UserId);
 
                     _sessions.Update(sessionId, updated);
 
@@ -232,6 +238,35 @@ namespace OAuthCodeFlowService.Controllers
             return new ContentResult
             {
                 Content = content,
+                ContentType = "application/json",
+                StatusCode = (int)resp.StatusCode
+            };
+        }
+
+        // POST api/bff/products/mark-sold
+        [HttpPost("products/mark-sold")]
+        public async Task<IActionResult> MarkProductsAsSold([FromBody] List<string>? ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                return BadRequest("No product IDs provided.");
+            }
+
+            (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
+            if (!ok || session == null) return Unauthorized();
+
+            HttpClient client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+
+            string json = JsonSerializer.Serialize(ids);
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/mark-sold", content);
+            string respContent = await resp.Content.ReadAsStringAsync();
+
+            return new ContentResult
+            {
+                Content = respContent,
                 ContentType = "application/json",
                 StatusCode = (int)resp.StatusCode
             };

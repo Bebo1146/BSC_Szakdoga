@@ -128,10 +128,17 @@ namespace OAuthCodeFlowService.Controllers
 
                 // derive preferred name from id_token (preferred) or access_token
                 string? preferredName = JwtClaimReader.GetPreferredNameFromJwt(tokenResponse);
+                string? userid = JwtClaimReader.GetNameFromJwt(tokenResponse);
 
-                // create server-side session and set secure cookie
                 DateTimeOffset expiresAt = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn > 0 ? tokenResponse.ExpiresIn : 3600);
-                SessionInfo sessionInfo = new SessionInfo(tokenResponse.AccessToken, tokenResponse.RefreshToken, tokenResponse.IdToken, expiresAt, preferredName);
+                SessionInfo sessionInfo = new SessionInfo(
+                    tokenResponse.AccessToken,
+                    tokenResponse.RefreshToken,
+                    tokenResponse.IdToken,
+                    expiresAt,
+                    preferredName,
+                    userid);
+
                 string sessionId = _sessionRepository.Create(sessionInfo);
 
                 // Set SameSite and Secure conditionally for local dev vs production:
@@ -210,10 +217,17 @@ namespace OAuthCodeFlowService.Controllers
                 _logger.LogInformation("Successfully exchanged code for tokens (GET callback) for state {State}", state);
 
                 string? preferredName = JwtClaimReader.GetPreferredNameFromJwt(tokenResponse);
+                string? userid = JwtClaimReader.GetNameFromJwt(tokenResponse);
 
                 // create server-side session and set secure cookie
                 DateTimeOffset expiresAt = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn > 0 ? tokenResponse.ExpiresIn : 3600);
-                SessionInfo sessionInfo = new SessionInfo(tokenResponse.AccessToken, tokenResponse.RefreshToken, tokenResponse.IdToken, expiresAt, preferredName);
+                SessionInfo sessionInfo = new SessionInfo(
+                    tokenResponse.AccessToken,
+                    tokenResponse.RefreshToken,
+                    tokenResponse.IdToken,
+                    expiresAt,
+                    preferredName,
+                    userid);
                 string sessionId = _sessionRepository.Create(sessionInfo);
 
                 CookieOptions cookieOptions = new CookieOptions
@@ -278,8 +292,8 @@ namespace OAuthCodeFlowService.Controllers
             {
                 expiresAt = session.ExpiresAt,
                 hasRefreshToken = !string.IsNullOrEmpty(session.RefreshToken),
-                preferredName = session.PreferredName
-                // Do not return access_token to frontend. Return minimal info only.
+                preferredName = session.PreferredName,
+                userId = session.UserId
             });
         }
 

@@ -2,9 +2,12 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { switchMap, finalize } from 'rxjs';
+import { switchMap, finalize, catchError, of, map, filter, take, timeout } from 'rxjs';
 import { PaymentService, PaymentResponse } from '../services/payment.service';
 import { BidService } from '../services/bid.service';
+import { ProductService } from '../services/product.service';
+import { AuthService } from '../services/auth.service';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-payment',
@@ -18,8 +21,11 @@ export class PaymentComponent implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private paymentService = inject(PaymentService);
+  private productService = inject(ProductService);
   private bidService = inject(BidService);
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private themeService = inject(ThemeService);
 
   loading = false;
   error = '';
@@ -53,29 +59,40 @@ export class PaymentComponent implements OnInit {
   }
 
   ngOnInit() {
+    // re-apply theme in case it was lost on navigation
+    this.themeService.applyTheme();
+
     const bidId = this.route.snapshot.queryParamMap.get('bidId');
-    if (!bidId) return;
+    if (!bidId) {
+      this.error = 'No product selected.';
+      return;
+    }
 
     this.loading = true;
 
-    this.bidService.getBidById(bidId)
-      .subscribe({
-        next: (b: any) => {
-          setTimeout(() => {
-            this.bid = b;
-            this.form.patchValue({ amount: b?.amount ?? 0 });
-            this.loading = false;
-            this.cdr.detectChanges();
-          });
-        },
-        error: () => {
-          setTimeout(() => {
-            this.error = 'Could not load product details.';
-            this.loading = false;
-            this.cdr.detectChanges();
-          });
-        },
-      });
+    this.authService.userId$.pipe(
+      filter(id => id !== null),
+      take(1),
+      // if session never resolves within 10s, give up
+      timeout(10_000),
+      switchMap(() => this.bidService.getBidById(bidId))
+    ).subscribe({
+      next: (b: any) => {
+        setTimeout(() => {
+          this.bid = b;
+          this.form.patchValue({ amount: b?.amount ?? 0 });
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: () => {
+        setTimeout(() => {
+          this.error = 'Could not load product details. Please log in and try again.';
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
+      },
+    });
   }
 
   pay() {
@@ -99,7 +116,18 @@ export class PaymentComponent implements OnInit {
     this.paymentService
       .createPayment({ bidId, amount: amount ?? 0, method: 'card' })
       .pipe(
+        // step 1: confirm payment (fake: calls /confirm endpoint → succeeded)
         switchMap((res: PaymentResponse) => this.paymentService.finalizePayment(res)),
+        // step 2: if succeeded, mark product as sold
+        switchMap((res: any) => {
+          if (res?.status === 'succeeded') {
+            return this.productService.markAsSold([bidId]).pipe(
+              catchError(() => of(res)),
+              map(() => res)
+            );
+          }
+          return of(res);
+        }),
         finalize(() => {
           setTimeout(() => {
             this.loading = false;
@@ -114,7 +142,7 @@ export class PaymentComponent implements OnInit {
             setTimeout(() => this.router.navigate(['/my-bids']), 1200);
             return;
           }
-          this.success = `Payment status: ${res?.status}`;
+          this.error = `Unexpected payment status: ${res?.status}`;
         },
         error: (err: any) => {
           this.error = err?.error?.error ?? err?.message ?? 'Payment failed.';

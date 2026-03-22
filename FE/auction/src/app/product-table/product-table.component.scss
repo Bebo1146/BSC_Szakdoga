@@ -203,73 +203,59 @@ input[type="checkbox"] {
   accent-color: var(--accent-color);
 }
 
-/* Keep pay button right-aligned inside its table cell */
+/* last column — right-aligned, stable width, vertically centered */
 .table tbody td:last-child {
-  /* align inline/inline-flex children to the right */
   text-align: right;
-  /* give the column a stable max width so it doesn't stretch the table */
   width: 160px;
   min-width: 100px;
   padding-right: 12px;
   box-sizing: border-box;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
-/* ensure the wrapper uses flex-end */
-.pay-wrapper {
-  display: inline-flex; /* already set, reaffirm */
-  align-items: center;
+.pay-wrapper,
+.feedback-wrapper {
+  display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  min-width: 0;
+  align-items: center;
 }
 
-/* tighter layout on small screens */
-@media (max-width: 640px) {
-  .table tbody td:last-child {
-    width: auto;
-    min-width: 0;
-    padding-right: 8px;
-  }
-
-  .pay-wrapper .pay-link {
-    padding: 4px 8px;
-    font-size: 0.85rem;
-  }
-}
-
-/* Style both <a class="pay-link"> and <button class="pay-link"> consistently */
-.pay-wrapper .pay-link,
-.card-actions .pay-link {
+.pay-link,
+.feedback-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
-  background: var(--button-primary-bg);
-  color: var(--button-primary-text);
+  height: 34px;
+  padding: 0 12px;
   border-radius: 6px;
-  font-weight: 700;
-  text-decoration: none;
-  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-sizing: border-box;
   cursor: pointer;
-  transition: background-color 0.15s ease, transform 0.06s ease;
-  box-shadow: none;
+  white-space: nowrap;
 }
 
-.pay-wrapper .pay-link:hover,
-.card-actions .pay-link:hover {
-  background: var(--button-primary-hover);
+.pay-link {
+  border: none;
+  background: var(--button-primary-bg, #6366f1);
+  color: var(--button-primary-text, #fff);
+  transition: opacity 0.15s;
+
+  &:hover { opacity: 0.88; }
+  &:active { opacity: 0.75; }
 }
 
-.pay-wrapper .pay-link:focus,
-.card-actions .pay-link:focus {
-  outline: 2px solid rgba(99,102,241,0.15);
-  outline-offset: 2px;
-}
+.feedback-link {
+  border: 1.5px solid var(--button-primary-bg, #6366f1);
+  background: transparent;
+  color: var(--button-primary-bg, #6366f1);
+  transition: background 0.15s, color 0.15s;
 
-/* Ensure button element doesn't inherit default appearance */
-.pay-wrapper .pay-link[type="button"] {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  padding-top: 7px; /* minor visual tweak to vertically center text in some browsers */
+  &:hover {
+    background: var(--button-primary-bg, #6366f1);
+    color: var(--button-primary-text, #fff);
+  }
+  &:active { opacity: 0.75; }
 }

@@ -51,4 +51,13 @@ export class ProductService {
       ...this.defaultOptions,
     });
   }
+
+  // POST /api/BffProxy/products/mark-sold — accepts a list of product ids
+  markAsSold(productIds: string[]): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/products/mark-sold`,
+      productIds,
+      { ...this.defaultOptions }
+    );
+  }
 }

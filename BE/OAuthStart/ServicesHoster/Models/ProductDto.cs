@@ -26,6 +26,7 @@ namespace ServicesHoster.Services
         public int TotalBids { get; set; }
         public string? HighestBidderId { get; set; }
         public string? HighestBidderUsername { get; set; }
+        public List<ProductBidderDto> Bidders { get; set; } = [];
         
         // Owner/Seller information
         public string? SellerId { get; set; }
@@ -41,9 +42,11 @@ namespace ServicesHoster.Services
         /// <summary>
         /// Checks if the auction is currently active
         /// </summary>
-        public bool IsActive => 
-            Status == ProductStatus.Active && 
-            DateTime.UtcNow >= AuctionStartTime && 
+        public bool IsActive =>
+            Status != ProductStatus.Sold &&
+            Status != ProductStatus.Expired &&
+            Status != ProductStatus.Cancelled &&
+            DateTime.UtcNow >= AuctionStartTime &&
             DateTime.UtcNow < AuctionEndTime;
 
         /// <summary>
@@ -66,12 +69,11 @@ namespace ServicesHoster.Services
     /// </summary>
     public enum ProductStatus
     {
-        Draft,          // Not yet published
-        Active,         // Currently listed and accepting bids
-        Sold,           // Auction ended with successful sale
-        Expired,        // Auction ended without meeting reserve price
-        Cancelled,      // Cancelled by seller or admin
-        UnderReview     // Being reviewed by admin
+        Draft,      // Not yet published
+        Active,     // Currently listed and accepting bids
+        Sold,       // Auction ended with successful sale
+        Expired,    // Auction ended without meeting reserve price
+        Cancelled   // Cancelled by seller or admin
     }
 
     /// <summary>
@@ -97,5 +99,13 @@ namespace ServicesHoster.Services
         int Rating,             // 1-5 stars
         string? Comment,
         DateTime CreatedAt
+    );
+
+    /// <summary>
+    /// Represents a bidder on the product auction
+    /// </summary>
+    public record ProductBidderDto(
+        string BidderId,          // Unique identifier for the bidder
+        string BidderUsername    // Username of the bidder
     );
 }

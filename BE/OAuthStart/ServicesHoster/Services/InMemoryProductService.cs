@@ -22,6 +22,11 @@ namespace ServicesHoster.Services
                 TotalBids = 3,
                 HighestBidderId = "user-123",
                 HighestBidderUsername = "collector_joe",
+                Bidders =
+                [
+                    new ProductBidderDto("user-123", "collector_joe"),
+                    new ProductBidderDto("kicsi kuki", "fos")
+                ],
                 SellerId = "system",
                 SellerUsername = "admin",
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
@@ -36,16 +41,21 @@ namespace ServicesHoster.Services
                 Name = "Antique Watch",
                 Description = "Swiss made pocket watch, gold plated",
                 Category = "Jewelry",
-                Status = ProductStatus.Active,
+                Status = ProductStatus.Expired,
                 ImageUrl = "https://example.com/images/watch.jpg",
                 StartingPrice = 200.00m,
                 CurrentBid = 350.00m,
                 ReservePrice = 400.00m,
-                AuctionStartTime = DateTime.UtcNow.AddDays(-1),
-                AuctionEndTime = DateTime.UtcNow.AddDays(3),
+                AuctionStartTime = DateTime.UtcNow.AddDays(-4),
+                AuctionEndTime = DateTime.UtcNow.AddHours(-1),
                 TotalBids = 7,
-                HighestBidderId = "user-456",
-                HighestBidderUsername = "watch_enthusiast",
+                HighestBidderId = "user-123",
+                HighestBidderUsername = "collector_joe",
+                Bidders =
+                [
+                    new ProductBidderDto("user-123", "collector_joe"),
+                    new ProductBidderDto("kicsi kuki", "fos")
+                ],
                 SellerId = "system",
                 SellerUsername = "admin",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
@@ -117,8 +127,8 @@ namespace ServicesHoster.Services
                 TotalBids = 0,
                 HighestBidderId = null,
                 HighestBidderUsername = null,
-                SellerId = "system",
-                SellerUsername = "admin",
+                SellerId = "kicsi kuki",
+                SellerUsername = "fos",
                 CreatedAt = DateTime.UtcNow.AddHours(-3),
                 UpdatedAt = DateTime.MaxValue,
                 IsCompleted = false,
@@ -140,7 +150,12 @@ namespace ServicesHoster.Services
                 AuctionEndTime = DateTime.UtcNow.AddDays(-1),
                 TotalBids = 4,
                 HighestBidderId = "kicsi kuki",
-                HighestBidderUsername = "art_collector",
+                HighestBidderUsername = "fos",
+                Bidders =
+                [
+                    new ProductBidderDto("kicsi kuki", "fos"),
+                    new ProductBidderDto("user-654", "art_fan")
+                ],
                 SellerId = "system",
                 SellerUsername = "admin",
                 CreatedAt = DateTime.UtcNow.AddDays(-7),
@@ -209,16 +224,17 @@ namespace ServicesHoster.Services
                     ReservePrice = product.ReservePrice ?? 0m,
                     AuctionStartTime = product.AuctionStartTime,
                     AuctionEndTime = product.AuctionEndTime,
-                    TotalBids = product.TotalBids,
-                    HighestBidderId = product.HighestBidderId,
-                    HighestBidderUsername = product.HighestBidderUsername,
+                    TotalBids = 0,
+                    HighestBidderId = null,
+                    HighestBidderUsername = null,
+                    Bidders = [],
                     SellerId = userName,
                     SellerUsername = userPreferedName,
                     CreatedAt = now,
                     UpdatedAt = now,
-                    IsCompleted = product.IsCompleted,
-                    TransactionStatus = product.TransactionStatus,
-                    Feedback = product.Feedback
+                    IsCompleted = false,
+                    TransactionStatus = null,
+                    Feedback = null
                 };
                 Products.Add(productWithUser);
             }
@@ -281,6 +297,11 @@ namespace ServicesHoster.Services
             product.HighestBidderUsername = bidderUsername;
             product.UpdatedAt = now;
 
+            if (!product.Bidders.Any(b => b.BidderId == bidderId))
+            {
+                product.Bidders.Add(new ProductBidderDto(bidderId, bidderUsername));
+            }
+
             return Task.FromResult<(bool, string?, BidDto?)>((true, null, newBid));
         }
 
@@ -296,9 +317,26 @@ namespace ServicesHoster.Services
 
         public Task<IEnumerable<ProductDto>> GetProductsByBidderAsync(string bidderId)
         {
-            // Get all products where the given bidder is the highest bidder
-            var productsBidder = Products.Where(p => p.HighestBidderId == bidderId);
+            IEnumerable<ProductDto> productsBidder = Products
+                .Where(p => p.Bidders.Any(b => b.BidderId == bidderId));
+
             return Task.FromResult(productsBidder);
+        }
+
+        public Task<(bool Success, string? Error, ProductDto? Product)> MarkAsSoldAsync(string id)
+        {
+            ProductDto? product = Products.FirstOrDefault(p => p.Id == id);
+            if (product is null)
+            {
+                return Task.FromResult<(bool, string?, ProductDto?)>((false, "Product not found", null));
+            }
+
+            product.Status = ProductStatus.Sold;
+            product.IsCompleted = true;
+            product.TransactionStatus = TransactionStatus.Completed;
+            product.UpdatedAt = DateTime.UtcNow;
+
+            return Task.FromResult<(bool, string?, ProductDto?)>((true, null, product));
         }
     }
 }

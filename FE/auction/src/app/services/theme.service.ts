@@ -23,7 +23,7 @@ export class ThemeService {
     this.applyTheme();
   }
 
-  private applyTheme(): void {
+  applyTheme(): void {
     const theme = this.isDarkMode() ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
