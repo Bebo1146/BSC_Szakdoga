@@ -27,7 +27,8 @@ export class HomeComponent {
   readonly TransactionStatus = TransactionStatus;
 
   query = signal('');
-  statusFilter = signal<'All' | 'Active' | 'Draft' | 'Sold' | 'Expired' | 'Cancelled' | 'UnderReview'>('All');
+  // restrict statusFilter to the desired set
+  statusFilter = signal<'All' | 'Active' | 'Draft' | 'Sold' | 'Expired'>('All');
   sort = signal<'Newest' | 'Name A-Z' | 'Ending Soon' | 'Most Bids'>('Newest');
   selectedIds = signal<Set<string>>(new Set());
 
@@ -70,7 +71,6 @@ export class HomeComponent {
         Sold: ProductStatus.Sold,
         Expired: ProductStatus.Expired,
         Cancelled: ProductStatus.Cancelled,
-        UnderReview: ProductStatus.UnderReview,
       };
       rows = rows.filter((r) => r.status === statusMap[sf]);
     }

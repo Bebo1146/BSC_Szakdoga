@@ -158,6 +158,103 @@ namespace ServicesHoster.Controllers
             });
         }
 
+        [HttpPost("mark-rejected")]
+        public async Task<IActionResult> MarkAsRejected([FromBody] List<RejectProductRequest>? requests)
+        {
+            if (requests == null || requests.Count == 0)
+            {
+                return BadRequest("No rejection requests provided.");
+            }
+
+            List<ProductDto> updatedProducts = [];
+            List<object> failedProducts = [];
+
+            foreach (RejectProductRequest request in requests.Where(r => !string.IsNullOrWhiteSpace(r.Id)))
+            {
+                var (success, error, product) = await _productService.MarkAsRejectedAsync(request.Id, request.Reason);
+                if (success && product is not null)
+                {
+                    updatedProducts.Add(product);
+                }
+                else
+                {
+                    failedProducts.Add(new { request.Id, Message = error });
+                }
+            }
+
+            return Ok(new
+            {
+                UpdatedProducts = updatedProducts,
+                FailedProducts = failedProducts
+            });
+        }
+
+        [HttpPost("mark-accepted")]
+        public async Task<IActionResult> MarkAsAccepted([FromBody] List<string>? ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                return BadRequest("No product IDs provided.");
+            }
+
+            List<ProductDto> updatedProducts = [];
+            List<object> failedProducts = [];
+
+            foreach (string id in ids.Where(id => !string.IsNullOrWhiteSpace(id)))
+            {
+                var (success, error, product) = await _productService.MarkAsAcceptedAsync(id);
+                if (success && product is not null)
+                {
+                    updatedProducts.Add(product);
+                }
+                else
+                {
+                    failedProducts.Add(new { Id = id, Message = error });
+                }
+            }
+
+            return Ok(new
+            {
+                UpdatedProducts = updatedProducts,
+                FailedProducts = failedProducts
+            });
+        }
+
+        [HttpPost("{id}/feedback")]
+        public async Task<IActionResult> AddFeedback(string id, [FromBody] FeedbackDto? feedback)
+        {
+            if (feedback is null)
+            {
+                return BadRequest("Invalid feedback.");
+            }
+
+            if (!feedback.Rating.HasValue || feedback.Rating < 1 || feedback.Rating > 5)
+            {
+                return BadRequest("Rating must be between 1 and 5.");
+            }
+
+            var (success, error, product) = await _productService.AddFeedbackAsync(id, feedback);
+            if (!success)
+            {
+                return BadRequest(new { Message = error });
+            }
+
+            return Ok(product);
+        }
+
+        [HttpGet("my-received-feedback")]
+        public async Task<IActionResult> GetMyReceivedFeedback()
+        {
+            string userId = JwtClaimReader.GetNameFromJwt(JwtClaimReader.GetTokenFromRequest(Request));
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID not found in token");
+            }
+
+            IEnumerable<FeedbackItemDto> feedbackItems = await _productService.GetFeedbackReceivedByUserAsync(userId);
+            return Ok(feedbackItems);
+        }
+
         [HttpGet("/health")]
         [AllowAnonymous]
         public IActionResult Health()

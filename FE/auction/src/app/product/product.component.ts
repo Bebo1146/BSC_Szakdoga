@@ -27,7 +27,6 @@ export class ProductComponent {
   readonly TransactionStatus = TransactionStatus;
 
   query = signal('');
-  statusFilter = signal<'All' | 'Active' | 'Draft' | 'Sold' | 'Expired' | 'Cancelled' | 'UnderReview'>('All');
   sort = signal<'Newest' | 'Name A-Z' | 'Ending Soon' | 'Most Bids'>('Newest');
   selectedIds = signal<Set<string>>(new Set());
 
@@ -74,16 +73,8 @@ export class ProductComponent {
 
   filtered = computed(() => {
     const q = this.query().trim().toLowerCase();
-    const status = this.statusFilter();
-    let rows = this.products();
+    let rows = this.products().filter((r) => r.status === ProductStatus.Active);
 
-    // only show Active items in the public product listing
-    rows = rows.filter((r) => r.status === ProductStatus.Active);
-
-    if (status !== 'All') {
-      const statusEnum = ProductStatus[status as keyof typeof ProductStatus];
-      rows = rows.filter((r) => r.status === statusEnum);
-    }
     if (q) {
       rows = rows.filter(
         (r) =>
@@ -100,8 +91,7 @@ export class ProductComponent {
         break;
       case 'Ending Soon':
         rows = [...rows].sort(
-          (a, b) =>
-            new Date(a.auctionEndTime).getTime() - new Date(b.auctionEndTime).getTime()
+          (a, b) => new Date(a.auctionEndTime).getTime() - new Date(b.auctionEndTime).getTime()
         );
         break;
       case 'Most Bids':
@@ -109,8 +99,7 @@ export class ProductComponent {
         break;
       default:
         rows = [...rows].sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
         break;
     }
@@ -123,6 +112,8 @@ export class ProductComponent {
   }
 
   onAddProduct(): void {
+    console.log('Add product clicked');
+
     const now = new Date();
     const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     this.newProduct.set({

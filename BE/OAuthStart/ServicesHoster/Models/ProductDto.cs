@@ -14,26 +14,26 @@ namespace ServicesHoster.Services
         public string? Category { get; set; }
         public ProductStatus Status { get; set; }
         public string? ImageUrl { get; set; }
-        
+
         // Auction-specific fields
         public decimal StartingPrice { get; set; }
         public decimal? CurrentBid { get; set; }
         public decimal? ReservePrice { get; set; }
         public DateTime AuctionStartTime { get; set; }
         public DateTime AuctionEndTime { get; set; }
-        
+
         // Bidding information
         public int TotalBids { get; set; }
         public string? HighestBidderId { get; set; }
         public string? HighestBidderUsername { get; set; }
         public List<ProductBidderDto> Bidders { get; set; } = [];
-        
+
         // Owner/Seller information
         public string? SellerId { get; set; }
         public string? SellerUsername { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
-        
+
         // Transaction & Feedback
         public bool IsCompleted { get; set; }
         public TransactionStatus? TransactionStatus { get; set; }
@@ -46,21 +46,23 @@ namespace ServicesHoster.Services
             Status != ProductStatus.Sold &&
             Status != ProductStatus.Expired &&
             Status != ProductStatus.Cancelled &&
+            Status != ProductStatus.Rejected &&
             DateTime.UtcNow >= AuctionStartTime &&
             DateTime.UtcNow < AuctionEndTime;
 
         /// <summary>
         /// Checks if the auction has ended
         /// </summary>
-        public bool HasEnded => 
-            DateTime.UtcNow >= AuctionEndTime || 
-            Status == ProductStatus.Sold || 
-            Status == ProductStatus.Expired;
+        public bool HasEnded =>
+            DateTime.UtcNow >= AuctionEndTime ||
+            Status == ProductStatus.Sold ||
+            Status == ProductStatus.Expired ||
+            Status == ProductStatus.Rejected;
 
         /// <summary>
         /// Time remaining until auction ends (null if ended)
         /// </summary>
-        public TimeSpan? TimeRemaining => 
+        public TimeSpan? TimeRemaining =>
             HasEnded ? null : AuctionEndTime - DateTime.UtcNow;
     }
 
@@ -73,7 +75,8 @@ namespace ServicesHoster.Services
         Active,     // Currently listed and accepting bids
         Sold,       // Auction ended with successful sale
         Expired,    // Auction ended without meeting reserve price
-        Cancelled   // Cancelled by seller or admin
+        Cancelled,  // Cancelled by seller or admin
+        Rejected    // Rejected by admin
     }
 
     /// <summary>
@@ -91,21 +94,26 @@ namespace ServicesHoster.Services
     }
 
     /// <summary>
-    /// Feedback from winner after transaction
+    /// Feedback from winner after transaction or admin rejection note
     /// </summary>
     public record FeedbackDto(
-        string ReviewerId,
-        string ReviewerUsername,
-        int Rating,             // 1-5 stars
-        string? Comment,
-        DateTime CreatedAt
+        int? Rating,
+        string? Comment
     );
 
     /// <summary>
     /// Represents a bidder on the product auction
     /// </summary>
     public record ProductBidderDto(
-        string BidderId,          // Unique identifier for the bidder
-        string BidderUsername    // Username of the bidder
+        string BidderId,
+        string BidderUsername
+    );
+
+    /// <summary>
+    /// Request to reject a product with an optional reason
+    /// </summary>
+    public record RejectProductRequest(
+        string Id,
+        string? Reason
     );
 }

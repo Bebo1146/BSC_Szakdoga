@@ -21,13 +21,15 @@ export class ProductTableComponent {
   @Input() selectedIds = new Set<string>();
   @Input() loading = false;
   @Input() error: string | null = null;
-
-  // show/hide the Pay button (default: hidden)
-  @Input() showPay = false;
+  @Input() showPay = false;       
   @Input() showFeedback = false;
+  @Input() showDeleteButton = false; // ← changed from signal input() to @Input()
+
   @Output() selectionChange = new EventEmitter<Set<string>>();
   @Output() productClick = new EventEmitter<Product>();
   @Output() feedbackClick = new EventEmitter<Product>();
+  @Output() deleteClick = new EventEmitter<Product>();
+  @Output() acceptClick = new EventEmitter<Product>();
 
   readonly ProductStatus = ProductStatus;
 
@@ -67,7 +69,6 @@ export class ProductTableComponent {
       [ProductStatus.Sold]: 'Sold',
       [ProductStatus.Expired]: 'Expired',
       [ProductStatus.Cancelled]: 'Cancelled',
-      [ProductStatus.UnderReview]: 'Under Review',
     };
     return labels[status] ?? 'Unknown';
   }
@@ -116,5 +117,15 @@ export class ProductTableComponent {
       return;
     }
     this.router.navigate(['/payments'], { queryParams: { bidId } });
+  }
+
+  onDelete(p: Product, event: MouseEvent): void {
+    event.stopPropagation();
+    this.deleteClick.emit(p);
+  }
+
+  onAccept(p: Product, event: MouseEvent): void {
+    event.stopPropagation();
+    this.acceptClick.emit(p);
   }
 }

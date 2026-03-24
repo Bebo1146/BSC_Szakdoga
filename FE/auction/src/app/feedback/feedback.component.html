@@ -1,0 +1,44 @@
+<div class="app">
+  <app-navbar></app-navbar>
+
+  <main class="page">
+    <div class="card">
+      <h1>Leave Feedback</h1>
+      <p class="subtitle">How was your experience with this purchase?</p>
+
+      <div class="error" *ngIf="error">{{ error }}</div>
+      <div class="success" *ngIf="success">{{ success }}</div>
+
+      <ng-container *ngIf="!success">
+        <div class="stars">
+          <button
+            *ngFor="let star of stars"
+            class="star"
+            type="button"
+            [class.filled]="star <= (hoveredRating || rating)"
+            (mouseenter)="hoveredRating = star"
+            (mouseleave)="hoveredRating = 0"
+            (click)="setRating(star)"
+          >★</button>
+        </div>
+        <p class="rating-label" *ngIf="rating > 0">{{ rating }} / 5</p>
+
+        <textarea
+          class="comment"
+          [(ngModel)]="comment"
+          placeholder="Write a comment (optional)..."
+          rows="4"
+        ></textarea>
+
+        <button
+          class="submit-btn"
+          type="button"
+          [disabled]="loading || rating === 0"
+          (click)="submit()"
+        >
+          {{ loading ? 'Submitting...' : 'Submit Feedback' }}
+        </button>
+      </ng-container>
+    </div>
+  </main>
+</div>

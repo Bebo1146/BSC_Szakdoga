@@ -10,21 +10,21 @@
   </div>
 
   <div class="selects">
-    <select [ngModel]="statusFilter" (ngModelChange)="onStatusFilterChange($event)">
-      <option value="All">All Statuses</option>
-      <option value="Active">Active</option>
-      <option value="Draft">Draft</option>
-      <option value="Sold">Sold</option>
-      <option value="Expired">Expired</option>
-      <option value="Cancelled">Cancelled</option>
-      <option value="UnderReview">Under Review</option>
+    <select *ngIf="showStatusSelect" (change)="onStatusFilterChange($any($event.target).value)">
+      <option
+        *ngFor="let opt of statusOptions"
+        [value]="opt"
+        [selected]="statusFilter === opt"
+      >
+        {{ opt }}
+      </option>
     </select>
 
-    <select [ngModel]="sort" (ngModelChange)="onSortChange($event)">
-      <option value="Newest">Newest</option>
-      <option value="Name A-Z">Name A-Z</option>
-      <option value="Ending Soon">Ending Soon</option>
-      <option value="Most Bids">Most Bids</option>
+    <select (change)="sortChange.emit($any($event.target).value)">
+      <option value="Newest" [selected]="sort === 'Newest'">Newest</option>
+      <option value="Name A-Z" [selected]="sort === 'Name A-Z'">Name A-Z</option>
+      <option value="Ending Soon" [selected]="sort === 'Ending Soon'">Ending Soon</option>
+      <option value="Most Bids" [selected]="sort === 'Most Bids'">Most Bids</option>
     </select>
   </div>
 

@@ -12,9 +12,9 @@
       [sort]="sort()"
       searchPlaceholder="Search my products..."
       (queryChange)="query.set($event)"
-      (statusFilterChange)="statusFilter.set($event)"
-      (sortChange)="sort.set($event)"
-      (addProduct)="onAddProduct()"
+      (statusFilterChange)="statusFilter.set($any($event))"
+      (sortChange)="sort.set($any($event))"
+      (addClick)="onAddProduct()"
     ></app-product-toolbar>
 
     <app-product-table

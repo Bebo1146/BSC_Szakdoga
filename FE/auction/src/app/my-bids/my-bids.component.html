@@ -11,10 +11,12 @@
       [query]="query()"
       [statusFilter]="statusFilter()"
       [sort]="sort()"
+      [showAddButton]="false"
+      [statusOptions]="['All', 'Active', 'Sold', 'Expired']"
       searchPlaceholder="Search my bids..."
       (queryChange)="query.set($event)"
-      (statusFilterChange)="statusFilter.set($event)"
-      (sortChange)="sort.set($event)"
+      (statusFilterChange)="statusFilter.set($any($event))"
+      (sortChange)="sort.set($any($event))"
     ></app-product-toolbar>
 
     <app-product-table

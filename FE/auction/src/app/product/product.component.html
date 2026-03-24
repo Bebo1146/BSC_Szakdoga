@@ -6,13 +6,12 @@
 
     <app-product-toolbar
       [query]="query()"
-      [statusFilter]="statusFilter()"
       [sort]="sort()"
+      [showStatusSelect]="false"
       searchPlaceholder="Search products..."
       (queryChange)="query.set($event)"
-      (statusFilterChange)="statusFilter.set($event)"
-      (sortChange)="sort.set($event)"
-      (addProduct)="onAddProduct()"
+      (sortChange)="sort.set($any($event))"
+      (addClick)="onAddProduct()"
     ></app-product-toolbar>
 
     <app-product-table

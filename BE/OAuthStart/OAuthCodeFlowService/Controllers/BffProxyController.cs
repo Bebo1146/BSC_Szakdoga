@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using OAuthCodeFlowService.Services;
+using ServicesHoster.Services;
 
 namespace OAuthCodeFlowService.Controllers
 {
@@ -262,6 +263,109 @@ namespace OAuthCodeFlowService.Controllers
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
             HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/mark-sold", content);
+            string respContent = await resp.Content.ReadAsStringAsync();
+
+            return new ContentResult
+            {
+                Content = respContent,
+                ContentType = "application/json",
+                StatusCode = (int)resp.StatusCode
+            };
+        }
+
+        // POST api/bff/products/{id}/feedback
+        [HttpPost("products/{id}/feedback")]
+        public async Task<IActionResult> AddFeedback(string id, [FromBody] FeedbackDto? feedback)
+        {
+            if (feedback is null)
+            {
+                return BadRequest("Invalid feedback.");
+            }
+
+            (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
+            if (!ok || session == null) return Unauthorized();
+
+            HttpClient client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+
+            string json = JsonSerializer.Serialize(feedback);
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/{Uri.EscapeDataString(id)}/feedback", content);
+            string respContent = await resp.Content.ReadAsStringAsync();
+
+            return new ContentResult
+            {
+                Content = respContent,
+                ContentType = "application/json",
+                StatusCode = (int)resp.StatusCode
+            };
+        }
+
+        // NEW: GET api/bff/products/my-received-feedback
+        [HttpGet("products/my-received-feedback")]
+        public async Task<IActionResult> GetMyReceivedFeedback()
+        {
+            (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
+            if (!ok || session == null) return Unauthorized();
+
+            HttpClient client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+
+            HttpResponseMessage resp = await client.GetAsync($"{ProductsServiceBase}/my-received-feedback");
+            string content = await resp.Content.ReadAsStringAsync();
+
+            return new ContentResult
+            {
+                Content = content,
+                ContentType = "application/json",
+                StatusCode = (int)resp.StatusCode
+            };
+        }
+
+        // POST api/bff/products/mark-rejected
+        [HttpPost("products/mark-rejected")]
+        public async Task<IActionResult> MarkProductsAsRejected([FromBody] JsonElement body)
+        {
+            (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
+            if (!ok || session == null) return Unauthorized();
+
+            HttpClient client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+
+            string json = JsonSerializer.Serialize(body);
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/mark-rejected", content);
+            string respContent = await resp.Content.ReadAsStringAsync();
+
+            return new ContentResult
+            {
+                Content = respContent,
+                ContentType = "application/json",
+                StatusCode = (int)resp.StatusCode
+            };
+        }
+
+        // POST api/bff/products/mark-accepted
+        [HttpPost("products/mark-accepted")]
+        public async Task<IActionResult> MarkProductsAsAccepted([FromBody] List<string>? ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                return BadRequest("No product IDs provided.");
+            }
+
+            (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
+            if (!ok || session == null) return Unauthorized();
+
+            HttpClient client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+
+            string json = JsonSerializer.Serialize(ids);
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/mark-accepted", content);
             string respContent = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult

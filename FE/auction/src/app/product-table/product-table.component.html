@@ -9,7 +9,7 @@
         <th>NAME</th>
         <th>STATUS</th>
         <th>CATEGORY</th>
-        <th>CURRENT BID</th>
+        <th>CURRENT PRICE</th>
         <th>BIDS</th>
         <th>TIME LEFT</th>
         <th>SELLER</th>
@@ -45,7 +45,6 @@
             [class.sold]="p.status === ProductStatus.Sold"
             [class.expired]="p.status === ProductStatus.Expired"
             [class.cancelled]="p.status === ProductStatus.Cancelled"
-            [class.under-review]="p.status === ProductStatus.UnderReview"
           >
             {{ statusLabel(p.status) }}
           </span>
@@ -79,39 +78,48 @@
         <td class="muted">{{ p.sellerUsername }}</td>
 
         <td>
-          <!-- Show bid controls while auction is active; once ended show Pay button (when parent enables showPay) -->
-          <ng-container *ngIf="!p.hasEnded; else payBlock">
-            <app-product-bid
-              [productId]="p.id"
-              [currentBid]="p.currentBid ?? p.startingPrice"
-              [highestBid]="p.currentBid ?? p.startingPrice"
-              [minIncrement]="1"
-              [endsAt]="p.auctionEndTime"
-              (bidPlaced)="onBidPlaced($event, p)">
-            </app-product-bid>
+          <!-- Admin actions -->
+          <ng-container *ngIf="showDeleteButton; else bidBlock">
+            <div class="admin-actions">
+              <button
+                *ngIf="p.status === ProductStatus.Draft"
+                class="accept-link"
+                type="button"
+                (click)="onAccept(p, $event)"
+              >
+                Accept
+              </button>
+              <button
+                class="delete-link"
+                type="button"
+                (click)="onDelete(p, $event)"
+              >
+                Delete
+              </button>
+            </div>
           </ng-container>
 
-          <ng-template #payBlock>
-            <!-- pay button only for expired items (not yet paid) -->
-            <div class="pay-wrapper" *ngIf="showPay && p.status === ProductStatus.Expired">
-              <button
-                class="pay-link"
-                type="button"
-                (click)="onPay($event, p)"
-              >
-                Pay
-              </button>
-            </div>
-            <!-- feedback button only for sold items (already paid) -->
-            <div class="feedback-wrapper" *ngIf="showFeedback && p.status === ProductStatus.Sold">
-              <button
-                class="feedback-link"
-                type="button"
-                (click)="$event.stopPropagation(); feedbackClick.emit(p)"
-              >
-                Feedback
-              </button>
-            </div>
+          <!-- Normal bid/pay/feedback block -->
+          <ng-template #bidBlock>
+            <ng-container *ngIf="!p.hasEnded; else payBlock">
+              <app-product-bid
+                [productId]="p.id"
+                [currentBid]="p.currentBid ?? p.startingPrice"
+                [highestBid]="p.currentBid ?? p.startingPrice"
+                [minIncrement]="1"
+                [endsAt]="p.auctionEndTime"
+                (bidPlaced)="onBidPlaced($event, p)">
+              </app-product-bid>
+            </ng-container>
+
+            <ng-template #payBlock>
+              <div class="pay-wrapper" *ngIf="showPay && p.status === ProductStatus.Expired">
+                <button class="pay-link" type="button" (click)="onPay($event, p)">Pay</button>
+              </div>
+              <div class="feedback-wrapper" *ngIf="showFeedback && p.status === ProductStatus.Sold">
+                <button class="feedback-link" type="button" (click)="$event.stopPropagation(); feedbackClick.emit(p)">Feedback</button>
+              </div>
+            </ng-template>
           </ng-template>
         </td>
       </tr>

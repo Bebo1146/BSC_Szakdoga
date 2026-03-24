@@ -4,7 +4,6 @@ export enum ProductStatus {
   Sold = 2,
   Expired = 3,
   Cancelled = 4,
-  UnderReview = 5,
 }
 
 export enum TransactionStatus {

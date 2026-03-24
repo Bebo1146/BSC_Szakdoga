@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { Product, NewProduct } from '../models/product.model';
 
 @Injectable({
@@ -58,6 +59,26 @@ export class ProductService {
       `${this.apiUrl}/products/mark-sold`,
       productIds,
       { ...this.defaultOptions }
+    );
+  }
+
+  markAsRejected(requests: { id: string; reason?: string }[]): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/products/mark-rejected`,
+      requests,
+      { ...this.defaultOptions }
+    ).pipe(
+      tap(res => console.log('markAsRejected response:', res))
+    );
+  }
+
+  markAsAccepted(productIds: string[]): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/products/mark-accepted`,
+      productIds,
+      { ...this.defaultOptions }
+    ).pipe(
+      tap(res => console.log('markAsAccepted response:', res))
     );
   }
 }

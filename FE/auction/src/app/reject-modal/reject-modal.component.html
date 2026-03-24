@@ -1,0 +1,18 @@
+<div class="overlay" *ngIf="show" (click)="onCancel()">
+  <div class="modal card" (click)="$event.stopPropagation()">
+    <h2>Reject Product</h2>
+    <p class="subtitle">You are about to reject <strong>{{ productName }}</strong>. Please provide a reason.</p>
+
+    <textarea
+      class="comment"
+      [(ngModel)]="reason"
+      placeholder="Describe why this product is being rejected..."
+      rows="4"
+    ></textarea>
+
+    <div class="actions">
+      <button class="cancel-btn" type="button" (click)="onCancel()">Cancel</button>
+      <button class="reject-btn" type="button" (click)="onConfirm()">Reject Product</button>
+    </div>
+  </div>
+</div>

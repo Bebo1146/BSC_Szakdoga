@@ -1,0 +1,50 @@
+<div class="app">
+  <app-navbar></app-navbar>
+
+  <main class="page">
+    <h1>Reviews About Me</h1>
+
+    <div class="loading" *ngIf="loading()">Loading reviews...</div>
+    <div class="error" *ngIf="error()">{{ error() }}</div>
+
+    <ng-container *ngIf="!loading() && !error()">
+
+      <!-- summary -->
+      <div class="summary card" *ngIf="feedbacks().length > 0">
+        <div class="avg-score">{{ averageRating() | number:'1.1-1' }}</div>
+        <div class="avg-stars">
+          <span
+            *ngFor="let s of stars"
+            class="star"
+            [class.filled]="s <= averageRating()"
+          >★</span>
+        </div>
+        <div class="avg-label">{{ feedbacks().length }} review{{ feedbacks().length !== 1 ? 's' : '' }}</div>
+      </div>
+
+      <!-- list -->
+      <div class="feedback-list" *ngIf="feedbacks().length > 0">
+        <div class="feedback-card card" *ngFor="let f of feedbacks()">
+          <div class="feedback-header">
+            <div class="buyer">{{ f.buyerUsername }}</div>
+            <div class="stars">
+              <span
+                *ngFor="let s of stars"
+                class="star"
+                [class.filled]="s <= f.rating"
+              >★</span>
+            </div>
+            <div class="date">{{ f.createdAt | date:'mediumDate' }}</div>
+          </div>
+          <div class="product-name">{{ f.productName }}</div>
+          <div class="comment" *ngIf="f.comment">{{ f.comment }}</div>
+        </div>
+      </div>
+
+      <div class="empty" *ngIf="feedbacks().length === 0">
+        No reviews yet.
+      </div>
+
+    </ng-container>
+  </main>
+</div>

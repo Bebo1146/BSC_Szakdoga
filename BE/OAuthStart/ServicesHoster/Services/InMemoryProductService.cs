@@ -117,23 +117,25 @@ namespace ServicesHoster.Services
                 Name = "Gaming Console",
                 Description = "Latest generation gaming console, barely used",
                 Category = "Electronics",
-                Status = ProductStatus.Draft,
+                Status = ProductStatus.Sold,
                 ImageUrl = "https://example.com/images/console.jpg",
                 StartingPrice = 250.00m,
                 CurrentBid = 250,
                 ReservePrice = 350.00m,
-                AuctionStartTime = DateTime.UtcNow.AddDays(1),
-                AuctionEndTime = DateTime.UtcNow.AddDays(8),
+                AuctionStartTime = DateTime.UtcNow.AddDays(-8),
+                AuctionEndTime = DateTime.UtcNow.AddDays(-1),
                 TotalBids = 0,
                 HighestBidderId = null,
                 HighestBidderUsername = null,
                 SellerId = "kicsi kuki",
                 SellerUsername = "fos",
                 CreatedAt = DateTime.UtcNow.AddHours(-3),
-                UpdatedAt = DateTime.MaxValue,
-                IsCompleted = false,
-                TransactionStatus = null,
-                Feedback = null
+                UpdatedAt = DateTime.UtcNow,
+                IsCompleted = true,
+                TransactionStatus = TransactionStatus.Completed,
+                Feedback = new FeedbackDto(
+                    5,
+                    "Very smooth transaction, everything was exactly as described.")
             },
             new ProductDto
             {
@@ -187,6 +189,30 @@ namespace ServicesHoster.Services
                 IsCompleted = false,
                 TransactionStatus = null,
                 Feedback = null
+            },
+            new ProductDto
+            {
+                Id = "p-1008",
+                Name = "Wireless Headphones",
+                Description = "Noise-cancelling wireless headphones in excellent condition",
+                Category = "Electronics",
+                Status = ProductStatus.Draft,
+                ImageUrl = "https://example.com/images/headphones.jpg",
+                StartingPrice = 180.00m,
+                CurrentBid = 0m,
+                ReservePrice = 220.00m,
+                AuctionStartTime = DateTime.UtcNow.AddDays(2),
+                AuctionEndTime = DateTime.UtcNow.AddDays(9),
+                TotalBids = 0,
+                HighestBidderId = null,
+                HighestBidderUsername = null,
+                SellerId = "kicsi kuki",
+                SellerUsername = "fos",
+                CreatedAt = DateTime.UtcNow.AddHours(-2),
+                UpdatedAt = DateTime.UtcNow.AddHours(-1),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null
             }
         });
 
@@ -210,17 +236,16 @@ namespace ServicesHoster.Services
             DateTime now = DateTime.UtcNow;
             foreach (ProductDto product in products)
             {
-                // Create new product with user info using the required constructor
                 ProductDto productWithUser = new ProductDto
                 {
-                    Id = product.Id,
+                    Id = $"p-{Guid.NewGuid():N}",
                     Name = product.Name,
                     Description = product.Description,
                     Category = product.Category,
                     Status = product.Status,
                     ImageUrl = product.ImageUrl,
                     StartingPrice = product.StartingPrice,
-                    CurrentBid = product.CurrentBid ?? 0m,
+                    CurrentBid = product.StartingPrice,
                     ReservePrice = product.ReservePrice ?? 0m,
                     AuctionStartTime = product.AuctionStartTime,
                     AuctionEndTime = product.AuctionEndTime,
@@ -244,7 +269,9 @@ namespace ServicesHoster.Services
 
         public Task<IEnumerable<ProductDto>> GetByUserAsync(string userId)
         {
-            IEnumerable<ProductDto> userProducts = Products.Where(p => p.SellerId == userId);
+            IEnumerable<ProductDto> userProducts = Products
+                .Where(p => p.SellerId == userId && p.Status != ProductStatus.Rejected);
+
             return Task.FromResult(userProducts.AsEnumerable());
         }
 
@@ -318,7 +345,10 @@ namespace ServicesHoster.Services
         public Task<IEnumerable<ProductDto>> GetProductsByBidderAsync(string bidderId)
         {
             IEnumerable<ProductDto> productsBidder = Products
-                .Where(p => p.Bidders.Any(b => b.BidderId == bidderId));
+                .Where(p =>
+                    p.Bidders.Any(b => b.BidderId == bidderId) &&
+                    p.Feedback is null &&
+                    (p.Status != ProductStatus.Expired || p.HighestBidderId == bidderId));
 
             return Task.FromResult(productsBidder);
         }
@@ -334,6 +364,83 @@ namespace ServicesHoster.Services
             product.Status = ProductStatus.Sold;
             product.IsCompleted = true;
             product.TransactionStatus = TransactionStatus.Completed;
+            product.UpdatedAt = DateTime.UtcNow;
+
+            return Task.FromResult<(bool, string?, ProductDto?)>((true, null, product));
+        }
+
+        public Task<(bool Success, string? Error, ProductDto? Product)> AddFeedbackAsync(string productId, FeedbackDto feedback)
+        {
+            ProductDto? product = Products.FirstOrDefault(p => p.Id == productId);
+            if (product is null)
+            {
+                return Task.FromResult<(bool, string?, ProductDto?)>((false, "Product not found", null));
+            }
+
+            if (product.Status != ProductStatus.Sold)
+            {
+                return Task.FromResult<(bool, string?, ProductDto?)>((false, "Feedback can only be added to sold products", null));
+            }
+
+            if (!feedback.Rating.HasValue || feedback.Rating < 1 || feedback.Rating > 5)
+            {
+                return Task.FromResult<(bool, string?, ProductDto?)>((false, "Rating must be between 1 and 5", null));
+            }
+
+            product.Feedback = feedback;
+            product.UpdatedAt = DateTime.UtcNow;
+
+            return Task.FromResult<(bool, string?, ProductDto?)>((true, null, product));
+        }
+
+        public Task<IEnumerable<FeedbackItemDto>> GetFeedbackReceivedByUserAsync(string userId)
+        {
+            IEnumerable<FeedbackItemDto> feedbackItems = Products
+                .Where(p =>
+                    p.SellerId == userId &&
+                    (p.Status == ProductStatus.Sold || p.Status == ProductStatus.Rejected) &&
+                    p.Feedback is not null)
+                .Select(p => new FeedbackItemDto(
+                    $"feedback-{p.Id}",
+                    p.Id ?? string.Empty,
+                    p.Name ?? string.Empty,
+                    p.Feedback!.Rating ?? 0,
+                    p.Feedback.Comment,
+                    p.UpdatedAt ?? p.CreatedAt,
+                    p.HighestBidderUsername ?? string.Empty))
+                .AsEnumerable();
+
+            return Task.FromResult(feedbackItems);
+        }
+
+        public Task<(bool Success, string? Error, ProductDto? Product)> MarkAsRejectedAsync(string id, string? reason)
+        {
+            ProductDto? product = Products.FirstOrDefault(p => p.Id == id);
+            if (product is null)
+            {
+                return Task.FromResult<(bool, string?, ProductDto?)>((false, "Product not found", null));
+            }
+
+            product.Status = ProductStatus.Rejected;
+            product.IsCompleted = false;
+            product.TransactionStatus = null;
+            product.Feedback = new FeedbackDto(
+                null,
+                reason);
+            product.UpdatedAt = DateTime.UtcNow;
+
+            return Task.FromResult<(bool, string?, ProductDto?)>((true, null, product));
+        }
+
+        public Task<(bool Success, string? Error, ProductDto? Product)> MarkAsAcceptedAsync(string id)
+        {
+            ProductDto? product = Products.FirstOrDefault(p => p.Id == id);
+            if (product is null)
+            {
+                return Task.FromResult<(bool, string?, ProductDto?)>((false, "Product not found", null));
+            }
+
+            product.Status = ProductStatus.Active;
             product.UpdatedAt = DateTime.UtcNow;
 
             return Task.FromResult<(bool, string?, ProductDto?)>((true, null, product));
