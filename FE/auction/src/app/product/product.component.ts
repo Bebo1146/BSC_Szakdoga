@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../navbar/navbar';
@@ -6,6 +6,8 @@ import { ProductTableComponent } from '../product-table/product-table.component'
 import { ProductFormModalComponent } from '../product-form-modal/product-form-modal.component';
 import { ProductToolbarComponent } from '../product-toolbar/product-toolbar.component';
 import { ProductService } from '../services/product.service';
+import { AuctionSignalService, AuctionTimeUpdate } from '../services/auction-hub.service';
+import { Subscription } from 'rxjs';
 import {
   Product,
   NewProduct,
@@ -20,8 +22,10 @@ import {
   templateUrl: './product.component.html',
   styleUrls: ['./product.component.scss'],
 })
-export class ProductComponent {
+export class ProductComponent implements OnDestroy {
   private readonly productService = inject(ProductService);
+  private readonly auctionHub = inject(AuctionSignalService);
+  private hubSubscription?: Subscription;
 
   readonly ProductStatus = ProductStatus;
   readonly TransactionStatus = TransactionStatus;
@@ -62,6 +66,7 @@ export class ProductComponent {
       next: (rows) => {
         this.products.set(rows ?? []);
         this.loading.set(false);
+        this.connectToHub();
       },
       error: (err) => {
         this.loading.set(false);
@@ -69,6 +74,47 @@ export class ProductComponent {
         console.error(err);
       },
     });
+  }
+
+  private connectToHub(): void {
+    this.hubSubscription?.unsubscribe();
+    this.auctionHub.start();
+    this.hubSubscription = this.auctionHub.updates$.subscribe((updates: AuctionTimeUpdate[]) => {
+      this.products.update(current => {
+        let hasChanges = false;
+
+        const next = current.map(p => {
+          const update = updates.find(u => u.productId === p.id);
+          if (!update) return p;
+
+          const statusAsEnum = ProductStatus[update.status as keyof typeof ProductStatus];
+          if (
+            p.isActive === update.isActive &&
+            p.hasEnded === update.hasEnded &&
+            p.status === statusAsEnum &&
+            p.timeRemainingSeconds === update.timeRemainingSeconds
+          ) {
+            return p;
+          }
+
+          hasChanges = true;
+          return {
+            ...p,
+            isActive: update.isActive,
+            hasEnded: update.hasEnded,
+            status: statusAsEnum,
+            timeRemainingSeconds: update.timeRemainingSeconds,
+          };
+        });
+
+        return hasChanges ? next : current;
+      });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.hubSubscription?.unsubscribe();
+    this.auctionHub.stop();
   }
 
   filtered = computed(() => {

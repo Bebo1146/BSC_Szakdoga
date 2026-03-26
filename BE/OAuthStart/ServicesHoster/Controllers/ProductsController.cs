@@ -90,7 +90,7 @@ namespace ServicesHoster.Controllers
         }
 
         // Bid request DTO
-        public record BidRequest(decimal Amount);
+        public record BidRequest(int Amount);
 
         /// <summary>
         /// Place a bid on a product.
@@ -103,7 +103,7 @@ namespace ServicesHoster.Controllers
                 return BadRequest("Invalid bid request.");
             }
 
-            if (request.Amount <= 0m)
+            if (request.Amount <= 0)
             {
                 return BadRequest("Bid amount must be greater than zero.");
             }

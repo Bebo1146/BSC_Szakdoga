@@ -14,9 +14,8 @@ namespace ServicesHoster.Services
                 Category = "Electronics",
                 Status = ProductStatus.Active,
                 ImageUrl = "https://example.com/images/camera.jpg",
-                StartingPrice = 50.00m,
-                CurrentBid = 75.00m,
-                ReservePrice = 100.00m,
+                StartingPrice = 50,
+                CurrentBid = 75,
                 AuctionStartTime = DateTime.UtcNow.AddDays(-2),
                 AuctionEndTime = DateTime.UtcNow.AddDays(5),
                 TotalBids = 3,
@@ -43,9 +42,8 @@ namespace ServicesHoster.Services
                 Category = "Jewelry",
                 Status = ProductStatus.Expired,
                 ImageUrl = "https://example.com/images/watch.jpg",
-                StartingPrice = 200.00m,
-                CurrentBid = 350.00m,
-                ReservePrice = 400.00m,
+                StartingPrice = 200,
+                CurrentBid = 350,
                 AuctionStartTime = DateTime.UtcNow.AddDays(-4),
                 AuctionEndTime = DateTime.UtcNow.AddHours(-1),
                 TotalBids = 7,
@@ -72,9 +70,8 @@ namespace ServicesHoster.Services
                 Category = "Fashion",
                 Status = ProductStatus.Active,
                 ImageUrl = "https://example.com/images/handbag.jpg",
-                StartingPrice = 100.00m,
-                CurrentBid = 150.00m,
-                ReservePrice = 180.00m,
+                StartingPrice = 100,
+                CurrentBid = 150,
                 AuctionStartTime = DateTime.UtcNow.AddHours(-12),
                 AuctionEndTime = DateTime.UtcNow.AddDays(2),
                 TotalBids = 5,
@@ -96,9 +93,8 @@ namespace ServicesHoster.Services
                 Category = "Music",
                 Status = ProductStatus.Sold,
                 ImageUrl = "https://example.com/images/vinyl.jpg",
-                StartingPrice = 30.00m,
-                CurrentBid = 120.00m,
-                ReservePrice = 80.00m,
+                StartingPrice = 30,
+                CurrentBid = 120,
                 AuctionStartTime = DateTime.UtcNow.AddDays(-10),
                 AuctionEndTime = DateTime.UtcNow.AddDays(-3),
                 TotalBids = 12,
@@ -109,7 +105,7 @@ namespace ServicesHoster.Services
                 CreatedAt = DateTime.UtcNow.AddDays(-10),
                 UpdatedAt = DateTime.UtcNow.AddDays(-3),
                 IsCompleted = true,
-                TransactionStatus = TransactionStatus.Completed,
+                TransactionStatus = TransactionStatus.Completed
             },
             new ProductDto
             {
@@ -119,9 +115,8 @@ namespace ServicesHoster.Services
                 Category = "Electronics",
                 Status = ProductStatus.Sold,
                 ImageUrl = "https://example.com/images/console.jpg",
-                StartingPrice = 250.00m,
+                StartingPrice = 250,
                 CurrentBid = 250,
-                ReservePrice = 350.00m,
                 AuctionStartTime = DateTime.UtcNow.AddDays(-8),
                 AuctionEndTime = DateTime.UtcNow.AddDays(-1),
                 TotalBids = 0,
@@ -145,9 +140,8 @@ namespace ServicesHoster.Services
                 Category = "Art",
                 Status = ProductStatus.Expired,
                 ImageUrl = "https://example.com/images/painting.jpg",
-                StartingPrice = 500.00m,
-                CurrentBid = 450.00m,
-                ReservePrice = 600.00m,
+                StartingPrice = 500,
+                CurrentBid = 450,
                 AuctionStartTime = DateTime.UtcNow.AddDays(-7),
                 AuctionEndTime = DateTime.UtcNow.AddDays(-1),
                 TotalBids = 4,
@@ -174,9 +168,8 @@ namespace ServicesHoster.Services
                 Category = "Sports",
                 Status = ProductStatus.Active,
                 ImageUrl = "https://example.com/images/bike.jpg",
-                StartingPrice = 300.00m,
-                CurrentBid = 420.00m,
-                ReservePrice = 500.00m,
+                StartingPrice = 300,
+                CurrentBid = 420,
                 AuctionStartTime = DateTime.UtcNow.AddHours(-6),
                 AuctionEndTime = DateTime.UtcNow.AddDays(4),
                 TotalBids = 6,
@@ -198,9 +191,8 @@ namespace ServicesHoster.Services
                 Category = "Electronics",
                 Status = ProductStatus.Draft,
                 ImageUrl = "https://example.com/images/headphones.jpg",
-                StartingPrice = 180.00m,
-                CurrentBid = 0m,
-                ReservePrice = 220.00m,
+                StartingPrice = 180,
+                CurrentBid = 180,
                 AuctionStartTime = DateTime.UtcNow.AddDays(2),
                 AuctionEndTime = DateTime.UtcNow.AddDays(9),
                 TotalBids = 0,
@@ -216,13 +208,33 @@ namespace ServicesHoster.Services
             }
         });
 
-        // In-memory bid storage and winning-bid tracking
         private static readonly ConcurrentDictionary<string, BidDto> _bids = new();
         private static readonly ConcurrentDictionary<string, string> _winningBidByProduct = new();
 
+        private static void ExpireEndedAuctions()
+        {
+            DateTime now = DateTime.UtcNow;
+            foreach (ProductDto product in Products)
+            {
+                if (product.Status == ProductStatus.Active && now >= product.AuctionEndTime)
+                {
+                    product.Status = ProductStatus.Expired;
+                    product.UpdatedAt = now;
+                }
+            }
+        }
+
+        // Returns all products unfiltered (used by controller/admin logic)
         public Task<IEnumerable<ProductDto>> GetAllAsync()
         {
             return Task.FromResult(Products.AsEnumerable());
+        }
+
+        // Returns only active products, auto-expires ended ones (used by SignalR timer)
+        public Task<IEnumerable<ProductDto>> GetActiveProductsAsync()
+        {
+            ExpireEndedAuctions();
+            return Task.FromResult(Products.Where(p => p.Status == ProductStatus.Active).AsEnumerable());
         }
 
         public Task<ProductDto?> GetByIdAsync(string id)
@@ -246,7 +258,6 @@ namespace ServicesHoster.Services
                     ImageUrl = product.ImageUrl,
                     StartingPrice = product.StartingPrice,
                     CurrentBid = product.StartingPrice,
-                    ReservePrice = product.ReservePrice ?? 0m,
                     AuctionStartTime = product.AuctionStartTime,
                     AuctionEndTime = product.AuctionEndTime,
                     TotalBids = 0,
@@ -275,7 +286,7 @@ namespace ServicesHoster.Services
             return Task.FromResult(userProducts.AsEnumerable());
         }
 
-        public Task<(bool Success, string? Error, BidDto? Bid)> PlaceBidAsync(string productId, decimal amount, string bidderId, string bidderUsername)
+        public Task<(bool Success, string? Error, BidDto? Bid)> PlaceBidAsync(string productId, int amount, string bidderId, string bidderUsername)
         {
             ProductDto? product = Products.FirstOrDefault(p => p.Id == productId);
             if (product is null)
@@ -283,17 +294,12 @@ namespace ServicesHoster.Services
                 return Task.FromResult<(bool, string?, BidDto?)>((false, "Product not found", null));
             }
 
-            //if (!product.IsActive)
-            //{
-            //    return Task.FromResult<(bool, string?, BidDto?)>((false, "Auction is not active", null));
-            //}
-
             if (product.SellerId == bidderId)
             {
                 return Task.FromResult<(bool, string?, BidDto?)>((false, "Seller cannot place bids on their own product", null));
             }
 
-            decimal currentThreshold = (product.CurrentBid.HasValue && product.CurrentBid.Value > 0m) ? product.CurrentBid.Value : product.StartingPrice;
+            int currentThreshold = (product.CurrentBid.HasValue && product.CurrentBid.Value > 0) ? product.CurrentBid.Value : product.StartingPrice;
             if (amount <= currentThreshold)
             {
                 return Task.FromResult<(bool, string?, BidDto?)>((false, $"Bid must be greater than current bid ({currentThreshold:C})", null));
@@ -302,23 +308,19 @@ namespace ServicesHoster.Services
             DateTime now = DateTime.UtcNow;
             string bidId = $"b-{Guid.NewGuid():N}";
 
-            // Update previous winning bid if exists
             if (_winningBidByProduct.TryGetValue(productId, out string? previousWinningId) && !string.IsNullOrEmpty(previousWinningId))
             {
                 if (_bids.TryGetValue(previousWinningId, out BidDto? previousBid) && previousBid is not null && previousBid.IsWinningBid)
                 {
-                    // mark previous as not winning
                     _bids[previousWinningId] = previousBid with { IsWinningBid = false };
                 }
             }
 
-            // Create and store the new winning bid
             BidDto newBid = new(bidId, productId, bidderId, bidderUsername, amount, now, true);
             _bids[bidId] = newBid;
             _winningBidByProduct[productId] = bidId;
 
-            // Update product state
-            product.CurrentBid = amount;
+            product.CurrentBid = (int)amount;
             product.TotalBids += 1;
             product.HighestBidderId = bidderId;
             product.HighestBidderUsername = bidderUsername;
@@ -347,6 +349,7 @@ namespace ServicesHoster.Services
             IEnumerable<ProductDto> productsBidder = Products
                 .Where(p =>
                     p.Bidders.Any(b => b.BidderId == bidderId) &&
+                    p.Status != ProductStatus.Rejected &&
                     p.Feedback is null &&
                     (p.Status != ProductStatus.Expired || p.HighestBidderId == bidderId));
 
@@ -441,6 +444,7 @@ namespace ServicesHoster.Services
             }
 
             product.Status = ProductStatus.Active;
+            product.CurrentBid = product.StartingPrice;
             product.UpdatedAt = DateTime.UtcNow;
 
             return Task.FromResult<(bool, string?, ProductDto?)>((true, null, product));

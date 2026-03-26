@@ -49,6 +49,7 @@ export interface Product {
   isActive: boolean;
   hasEnded: boolean;
   timeRemaining: string | null;
+  timeRemainingSeconds?: number;
 }
 
 export interface NewProduct {

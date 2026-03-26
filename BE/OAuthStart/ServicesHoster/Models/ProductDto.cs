@@ -16,9 +16,8 @@ namespace ServicesHoster.Services
         public string? ImageUrl { get; set; }
 
         // Auction-specific fields
-        public decimal StartingPrice { get; set; }
-        public decimal? CurrentBid { get; set; }
-        public decimal? ReservePrice { get; set; }
+        public int StartingPrice { get; set; }
+        public int? CurrentBid { get; set; }
         public DateTime AuctionStartTime { get; set; }
         public DateTime AuctionEndTime { get; set; }
 

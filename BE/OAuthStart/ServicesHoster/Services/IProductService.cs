@@ -6,7 +6,7 @@ namespace ServicesHoster.Services
         Task<ProductDto?> GetByIdAsync(string id);
         Task AddRangeAsync(IEnumerable<ProductDto> products, string userName, string userPreferedName);
         Task<IEnumerable<ProductDto>> GetByUserAsync(string userId);
-        Task<(bool Success, string? Error, BidDto? Bid)> PlaceBidAsync(string productId, decimal amount, string bidderId, string bidderUsername);
+        Task<(bool Success, string? Error, BidDto? Bid)> PlaceBidAsync(string productId, int amount, string bidderId, string bidderUsername);
         Task<IEnumerable<BidDto>> GetBidsAsync(string productId);
         Task<IEnumerable<ProductDto>> GetProductsByBidderAsync(string bidderId);
         Task<(bool Success, string? Error, ProductDto? Product)> MarkAsSoldAsync(string id);
@@ -14,5 +14,6 @@ namespace ServicesHoster.Services
         Task<(bool Success, string? Error, ProductDto? Product)> MarkAsAcceptedAsync(string id);
         Task<(bool Success, string? Error, ProductDto? Product)> AddFeedbackAsync(string productId, FeedbackDto feedback);
         Task<IEnumerable<FeedbackItemDto>> GetFeedbackReceivedByUserAsync(string userId);
+        Task<IEnumerable<ProductDto>> GetActiveProductsAsync();
     }
 }

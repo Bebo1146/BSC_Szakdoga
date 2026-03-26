@@ -1,4 +1,5 @@
 using OAuthCodeFlowService.Configuration;
+using OAuthCodeFlowService.Hubs;
 using OAuthCodeFlowService.Services;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -32,6 +33,8 @@ else
 builder.Services.AddHttpClient<ITokenService, TokenService>();
 builder.Services.AddHttpClient(); // for proxying downstream APIs
 
+builder.Services.AddSignalR();
+
 // Add CORS for frontend applications
 builder.Services.AddCors(options =>
 {
@@ -47,12 +50,12 @@ builder.Services.AddCors(options =>
 
 WebApplication app = builder.Build();
 
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//// Configure the HTTP request pipeline
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
 
 app.UseCors("AllowFrontend");
 
@@ -61,5 +64,6 @@ app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<AuctionHub>("/hubs/auction");
 
 app.Run();

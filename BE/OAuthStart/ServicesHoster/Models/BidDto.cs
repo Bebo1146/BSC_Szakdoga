@@ -8,7 +8,7 @@ namespace ServicesHoster.Services
         string ProductId,
         string BidderId,
         string BidderUsername,
-        decimal Amount,
+        int Amount,
         DateTime BidTime,
         bool IsWinningBid
     );
