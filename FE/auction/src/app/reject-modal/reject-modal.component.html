@@ -5,10 +5,12 @@
 
     <textarea
       class="comment"
+      [class.invalid]="submitted && isReasonEmpty"
       [(ngModel)]="reason"
       placeholder="Describe why this product is being rejected..."
       rows="4"
     ></textarea>
+    <p class="error-msg" *ngIf="submitted && isReasonEmpty">Rejection reason is required.</p>
 
     <div class="actions">
       <button class="cancel-btn" type="button" (click)="onCancel()">Cancel</button>

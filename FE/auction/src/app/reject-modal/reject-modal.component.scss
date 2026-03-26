@@ -48,6 +48,10 @@ h2 {
     outline: none;
     border-color: var(--button-primary-bg, #6366f1);
   }
+
+  &.invalid {
+    border-color: var(--error-color, #e53e3e);
+  }
 }
 
 .actions {
@@ -83,4 +87,10 @@ h2 {
   transition: opacity 0.15s;
 
   &:hover { opacity: 0.88; }
+}
+
+.error-msg {
+  color: var(--error-color, #e53e3e);
+  font-size: 12px;
+  margin: -14px 0 16px;
 }

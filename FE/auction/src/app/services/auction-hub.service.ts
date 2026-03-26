@@ -28,7 +28,6 @@ export class AuctionSignalService implements OnDestroy {
 
     this.hubConnection.on('AuctionTimeUpdate', (updates: AuctionTimeUpdate[] | AuctionTimeUpdate) => {
       const arr = Array.isArray(updates) ? updates : [updates];
-      console.log('SignalR received count:', arr.length, 'all:', JSON.stringify(arr));
       this.updates$.next(arr);
     });
 

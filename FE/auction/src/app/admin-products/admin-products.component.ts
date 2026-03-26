@@ -47,10 +47,8 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
     );
 
     if (status && status !== 'All') {
-      rows = rows.filter((r) =>
-        String(r.status).toLowerCase() === status.toLowerCase() ||
-        ProductStatus[r.status]?.toLowerCase() === status.toLowerCase()
-      );
+      const statusEnum = ProductStatus[status as keyof typeof ProductStatus];
+      rows = rows.filter((r) => r.status === statusEnum);
     }
 
     if (q) {
@@ -213,7 +211,13 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   onAcceptProduct(p: Product): void {
     this.productService.markAsAccepted([p.id]).subscribe({
       next: () => {
-        this.products.update((prev) => prev.filter((x) => x.id !== p.id));
+        this.products.update((prev) =>
+          prev.map((x) =>
+            x.id === p.id
+              ? { ...x, status: ProductStatus.Active, isActive: true }
+              : x
+          )
+        );
       },
       error: (err) => {
         console.error('Failed to accept product', err);
