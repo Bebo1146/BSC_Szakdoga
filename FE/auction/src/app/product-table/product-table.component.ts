@@ -73,19 +73,18 @@ export class ProductTableComponent {
     return labels[status] ?? 'Unknown';
   }
 
-  formatTimeRemaining(timeRemaining: string | null): string {
-    if (!timeRemaining) return 'Ended';
-    const match = timeRemaining.match(/^(\d+)\.(\d{2}):(\d{2}):(\d{2})/);
-    if (match) {
-      const [, days, hours, minutes] = match;
-      const d = parseInt(days, 10);
-      const h = parseInt(hours, 10);
-      const m = parseInt(minutes, 10);
-      if (d > 0) return `${d}d ${h}h`;
-      if (h > 0) return `${h}h ${m}m`;
-      return `${m}m`;
-    }
-    return timeRemaining;
+  formatTimeRemaining(seconds: number | null | undefined): string {
+    if (seconds === null || seconds === undefined || isNaN(seconds) || seconds <= 0) return 'Ended';
+
+    const d = Math.floor(seconds / 86400);
+    const h = Math.floor((seconds % 86400) / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+
+    if (d > 0) return `${d}d ${h}h`;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
   }
 
   formatCurrency(value: number | null): string {

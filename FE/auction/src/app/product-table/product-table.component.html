@@ -68,10 +68,10 @@
         <td>
           <span
             class="time-remaining"
-            [class.ending-soon]="p.isActive && p.timeRemaining && p.timeRemaining.startsWith('0.')"
+            [class.ending-soon]="p.isActive && (p.timeRemainingSeconds ?? 0) > 0 && (p.timeRemainingSeconds ?? 0) < 3600"
             [class.ended]="p.hasEnded"
           >
-            {{ formatTimeRemaining(p.timeRemaining) }}
+            {{ formatTimeRemaining(p.timeRemainingSeconds) }}
           </span>
         </td>
 

@@ -64,7 +64,11 @@ export class ProductComponent implements OnDestroy {
 
     this.productService.getAllProducts().subscribe({
       next: (rows) => {
-        this.products.set(rows ?? []);
+        console.log('First product timeRemaining:', rows[0]?.timeRemaining, 'timeRemainingSeconds:', rows[0]?.timeRemainingSeconds);
+        this.products.set((rows ?? []).map(p => ({
+          ...p,
+          timeRemainingSeconds: p.timeRemainingSeconds ?? this.parseTimeRemaining(p.timeRemaining),
+        })));
         this.loading.set(false);
         this.connectToHub();
       },
@@ -76,8 +80,23 @@ export class ProductComponent implements OnDestroy {
     });
   }
 
+  private mockTimerInterval?: ReturnType<typeof setInterval>;
+
   private connectToHub(): void {
     this.hubSubscription?.unsubscribe();
+
+    // MOCK: simulates 1 minute passing per second - remove when done testing
+    // this.mockTimerInterval = setInterval(() => {
+    //   this.products.update(current =>
+    //     current.map(p => ({
+    //       ...p,
+    //       timeRemainingSeconds: Math.max(0, (p.timeRemainingSeconds ?? 86400) - 60),
+    //     }))
+    //   );
+    // }, 1000);
+    // return;
+    // END MOCK
+
     this.auctionHub.start();
     this.hubSubscription = this.auctionHub.updates$.subscribe((updates: AuctionTimeUpdate[]) => {
       this.products.update(current => {
@@ -113,6 +132,7 @@ export class ProductComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    clearInterval(this.mockTimerInterval);
     this.hubSubscription?.unsubscribe();
     this.auctionHub.stop();
   }
@@ -212,5 +232,20 @@ export class ProductComponent implements OnDestroy {
 
   onProductChange(updated: NewProduct): void {
     this.newProduct.set(updated);
+  }
+
+  private parseTimeRemaining(timeRemaining: string | null): number {
+    if (!timeRemaining) return 0;
+    // expects format like "3.04:25:10" (days.hh:mm:ss) or "04:25:10"
+    const parts = timeRemaining.split(':');
+    if (parts.length === 3) {
+      const dayHour = parts[0].split('.');
+      const days = dayHour.length > 1 ? parseInt(dayHour[0]) : 0;
+      const hours = parseInt(dayHour[dayHour.length - 1]);
+      const minutes = parseInt(parts[1]);
+      const seconds = parseInt(parts[2]);
+      return days * 86400 + hours * 3600 + minutes * 60 + seconds;
+    }
+    return 0;
   }
 }
