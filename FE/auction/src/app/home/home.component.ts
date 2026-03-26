@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../navbar/navbar';
@@ -6,6 +6,8 @@ import { ProductTableComponent } from '../product-table/product-table.component'
 import { ProductFormModalComponent } from '../product-form-modal/product-form-modal.component';
 import { ProductToolbarComponent } from '../product-toolbar/product-toolbar.component';
 import { ProductService } from '../services/product.service';
+import { AuctionSignalService, AuctionTimeUpdate } from '../services/auction-hub.service';
+import { Subscription } from 'rxjs';
 import {
   Product,
   NewProduct,
@@ -20,8 +22,10 @@ import {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
-export class HomeComponent {
+export class HomeComponent implements OnDestroy {
   private readonly productService = inject(ProductService);
+  private readonly auctionHub = inject(AuctionSignalService);
+  private hubSubscription?: Subscription;
 
   readonly ProductStatus = ProductStatus;
   readonly TransactionStatus = TransactionStatus;
@@ -87,8 +91,12 @@ export class HomeComponent {
 
     this.productService.getMyProducts().subscribe({
       next: (rows) => {
-        this.products.set(rows ?? []);
+        this.products.set((rows ?? []).map(p => ({
+          ...p,
+          timeRemainingSeconds: p.timeRemainingSeconds ?? this.parseTimeRemaining(p.timeRemaining),
+        })));
         this.loading.set(false);
+        this.connectToHub();
       },
       error: (err) => {
         this.loading.set(false);
@@ -96,6 +104,49 @@ export class HomeComponent {
         console.error(err);
       },
     });
+  }
+
+  private connectToHub(): void {
+    this.hubSubscription?.unsubscribe();
+    this.auctionHub.start();
+    this.hubSubscription = this.auctionHub.updates$.subscribe((updates: AuctionTimeUpdate[]) => {
+      this.products.update(current => {
+        let hasChanges = false;
+        const next = current.map(p => {
+          const update = updates.find(u => u.productId === p.id);
+          if (!update) return p;
+          const statusAsEnum = ProductStatus[update.status as keyof typeof ProductStatus];
+          if (
+            p.isActive === update.isActive &&
+            p.hasEnded === update.hasEnded &&
+            p.status === statusAsEnum &&
+            p.timeRemainingSeconds === update.timeRemainingSeconds
+          ) return p;
+          hasChanges = true;
+          return { ...p, isActive: update.isActive, hasEnded: update.hasEnded, status: statusAsEnum, timeRemainingSeconds: update.timeRemainingSeconds };
+        });
+        return hasChanges ? next : current;
+      });
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.hubSubscription?.unsubscribe();
+    this.auctionHub.stop();
+  }
+
+  private parseTimeRemaining(timeRemaining: string | null): number {
+    if (!timeRemaining) return 0;
+    const parts = timeRemaining.split(':');
+    if (parts.length === 3) {
+      const dayHour = parts[0].split('.');
+      const days = dayHour.length > 1 ? parseInt(dayHour[0]) : 0;
+      const hours = parseInt(dayHour[dayHour.length - 1]);
+      const minutes = parseInt(parts[1]);
+      const seconds = parseInt(parts[2]);
+      return days * 86400 + hours * 3600 + minutes * 60 + seconds;
+    }
+    return 0;
   }
 
   saveProduct(): void {

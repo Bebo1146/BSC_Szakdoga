@@ -32,7 +32,7 @@ namespace ServicesHoster.Services
                     using IServiceScope scope = _scopeFactory.CreateScope();
                     IProductService productService = scope.ServiceProvider.GetRequiredService<IProductService>();
 
-                    IEnumerable<ProductDto> activeProducts = await productService.GetActiveProductsAsync();
+                    IEnumerable<ProductDto> activeProducts = await productService.GetAllAsync();
 
                     List<AuctionTimeUpdate> updates = [];
                     DateTime now = DateTime.UtcNow;
