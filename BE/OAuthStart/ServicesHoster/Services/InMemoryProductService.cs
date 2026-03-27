@@ -8,6 +8,29 @@ namespace ServicesHoster.Services
         {
             new ProductDto
             {
+                Id = "p-1000",
+                Name = "Egy Adag szar",
+                Description = "Rare vintage camera from the 1960s in excellent condition",
+                Category = "Electronics",
+                Status = ProductStatus.Active,
+                ImageUrl = "https://example.com/images/camera.jpg",
+                StartingPrice = 50,
+                CurrentBid = 75,
+                AuctionStartTime = DateTime.UtcNow,
+                AuctionEndTime = DateTime.UtcNow.AddMinutes(1),
+                TotalBids = 3,
+                HighestBidderId = "user-123",
+                HighestBidderUsername = "collector_joe",
+                SellerId = "kicsi kuki",
+                SellerUsername = "fos",
+                CreatedAt = DateTime.UtcNow.AddDays(-2),
+                UpdatedAt = DateTime.UtcNow.AddHours(-1),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null
+            },
+            new ProductDto
+            {
                 Id = "p-1001",
                 Name = "Vintage Camera",
                 Description = "Rare vintage camera from the 1960s in excellent condition",
@@ -17,7 +40,7 @@ namespace ServicesHoster.Services
                 StartingPrice = 50,
                 CurrentBid = 75,
                 AuctionStartTime = DateTime.UtcNow,
-                AuctionEndTime = DateTime.UtcNow.AddHours(1),
+                AuctionEndTime = DateTime.UtcNow.AddMinutes(1),
                 TotalBids = 3,
                 HighestBidderId = "user-123",
                 HighestBidderUsername = "collector_joe",
@@ -211,7 +234,7 @@ namespace ServicesHoster.Services
         private static readonly ConcurrentDictionary<string, BidDto> _bids = new();
         private static readonly ConcurrentDictionary<string, string> _winningBidByProduct = new();
 
-        private static void ExpireEndedAuctions()
+        public Task ExpireEndedAuctionsAsync()
         {
             DateTime now = DateTime.UtcNow;
             foreach (ProductDto product in Products)
@@ -222,6 +245,8 @@ namespace ServicesHoster.Services
                     product.UpdatedAt = now;
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         // Returns all products unfiltered (used by controller/admin logic)
@@ -233,7 +258,6 @@ namespace ServicesHoster.Services
         // Returns only active products, auto-expires ended ones (used by SignalR timer)
         public Task<IEnumerable<ProductDto>> GetActiveProductsAsync()
         {
-            ExpireEndedAuctions();
             return Task.FromResult(Products.Where(p => p.Status == ProductStatus.Active).AsEnumerable());
         }
 
