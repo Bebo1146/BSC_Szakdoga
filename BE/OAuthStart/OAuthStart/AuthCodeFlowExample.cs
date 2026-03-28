@@ -17,7 +17,7 @@ namespace OAuthStart
             AuthorizationCodeFlowService authService = new AuthorizationCodeFlowService(
                 authorizationEndpoint: new Uri(discoveryDocument.AuthorizationEndpoint),
                 tokenEndpoint: new Uri(discoveryDocument.TokenEndpoint),
-                clientId: "my-backend-client3",
+                clientId: "my-backend-client5",
                 redirectUri: "http://localhost:5000/callback",
                 scope: "openid profile email",
                 clientSecret: "your-client-secret" // Optional for confidential clients

@@ -5,12 +5,18 @@
     "changeOrigin": true,
     "logLevel": "debug"
   },
-    "/api/payments": {
+  "/api/auth": {
+    "target": "http://localhost:5215",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/payments": {
     "target": "http://localhost:5232",
     "secure": false,
     "changeOrigin": true
   },
-    "/hubs": {
+  "/hubs": {
     "target": "http://localhost:5215",
     "secure": false,
     "changeOrigin": true,

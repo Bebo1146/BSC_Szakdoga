@@ -49,10 +49,12 @@ export class MyBidsComponent implements OnInit, OnDestroy {
 
     // hide sold items where feedback has already been given
     rows = rows.filter((p: any) => {
+      console.log(p.status);
+
       if (p.status === ProductStatus.Sold && this.feedbackService.hasFeedbackBeenGiven(p.id)) {
         return false;
       }
-
+      
       // only show expired items if current user is the highest bidder
       const isExpired = p.status === 'expired' || p.status === ProductStatus.Expired;
       if (isExpired) {
@@ -61,8 +63,6 @@ export class MyBidsComponent implements OnInit, OnDestroy {
 
       return true;
     });
-
-    console.log('After status filter, rows:', rows);
 
     // apply status filter from toolbar (if not "All")
     if (status && status !== 'All') {
@@ -73,9 +73,6 @@ export class MyBidsComponent implements OnInit, OnDestroy {
       });
     }
 
-    console.log('After status filter, rows:', rows);
-
-    // apply search query
     if (q) {
       rows = rows.filter(
         (r: any) =>
@@ -110,8 +107,6 @@ export class MyBidsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     void this.loadProducts();
-    console.log('userId:', this.authService.getUserIdSync());
-    console.log('preferredName:', this.authService.getPreferredNameSync());
   }
 
   loadProducts(): void {

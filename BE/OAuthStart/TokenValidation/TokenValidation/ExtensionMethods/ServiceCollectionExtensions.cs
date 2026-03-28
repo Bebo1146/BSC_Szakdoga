@@ -30,6 +30,11 @@ namespace TokenValidation.TokenValidation.ExtensionMethods
 
             TokenValidationOptions? authOptions = configuration.GetSection(sectionName).Get<TokenValidationOptions>();
 
+            // Use ValidIssuer if set, otherwise fall back to Authority
+            string effectiveIssuer = !string.IsNullOrWhiteSpace(authOptions.ValidIssuer)
+                ? authOptions.ValidIssuer
+                : authOptions.Authority;
+
             // Register authentication scheme with direct configuration
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>
@@ -46,7 +51,7 @@ namespace TokenValidation.TokenValidation.ExtensionMethods
                         options.TokenValidationParameters = new TokenValidationParameters
                         {
                             ValidateIssuer = true,
-                            ValidIssuer = authOptions.Authority,
+                            ValidIssuer = effectiveIssuer,
                             ValidateAudience = !string.IsNullOrWhiteSpace(authOptions.Audience),
                             ValidateLifetime = true,
                             ValidateIssuerSigningKey = true,

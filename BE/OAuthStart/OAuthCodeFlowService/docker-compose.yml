@@ -10,7 +10,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - OAuth__Issuer=http://keycloak:8080/realms/dev-realm
-      - OAuth__ClientId=my-backend-client3
+      - OAuth__ClientId=my-backend-client5
       - OAuth__ClientSecret=${OAUTH_CLIENT_SECRET:-}
       - OAuth__RedirectUri=http://localhost:5100/api/auth/callback
     depends_on:

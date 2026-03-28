@@ -36,6 +36,9 @@ namespace OAuthCodeFlowService.Services
                 if (_discoveryDocument != null)
                     return _discoveryDocument;
 
+                // Use the internal issuer for server-to-server discovery
+                string internalIssuer = _settings.EffectiveInternalIssuer;
+
                 // Allow HTTP for discovery in development only.
                 // In production you MUST use HTTPS and keep RequireHttps = true.
                 HttpDocumentRetriever httpDocRetriever = new HttpDocumentRetriever(_httpClient)
@@ -44,18 +47,18 @@ namespace OAuthCodeFlowService.Services
                 };
 
                 ConfigurationManager<OpenIdConnectConfiguration> configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                    $"{_settings.Issuer.TrimEnd('/')}/.well-known/openid-configuration",
+                    $"{internalIssuer.TrimEnd('/')}/.well-known/openid-configuration",
                     new OpenIdConnectConfigurationRetriever(),
                     httpDocRetriever);
 
                 _discoveryDocument = await configurationManager.GetConfigurationAsync();
-                _logger.LogInformation("Discovery document loaded from {Issuer}", _settings.Issuer);
+                _logger.LogInformation("Discovery document loaded from {Issuer}", internalIssuer);
                 return _discoveryDocument;
             }
             catch (Exception ex) when (ex is InvalidOperationException || ex is IOException || ex is HttpRequestException || ex is TaskCanceledException)
             {
-                _logger.LogError(ex, "Failed to load discovery document from {Issuer}", _settings.Issuer);
-                throw new InvalidOperationException($"Failed to load discovery document from {_settings.Issuer}", ex);
+                _logger.LogError(ex, "Failed to load discovery document from {Issuer}", _settings.EffectiveInternalIssuer);
+                throw new InvalidOperationException($"Failed to load discovery document from {_settings.EffectiveInternalIssuer}", ex);
             }
             finally
             {
@@ -63,22 +66,52 @@ namespace OAuthCodeFlowService.Services
             }
         }
 
+        /// <summary>
+        /// Returns the token endpoint using the internal Keycloak URL (for server-to-server calls).
+        /// </summary>
         public async Task<string> GetTokenEndpointAsync()
         {
-            OpenIdConnectConfiguration doc = await GetDiscoveryDocumentAsync();    
+            OpenIdConnectConfiguration doc = await GetDiscoveryDocumentAsync();
             return doc.TokenEndpoint;
         }
 
+        /// <summary>
+        /// Returns the authorization endpoint using the public Issuer URL (for browser redirects).
+        /// </summary>
         public async Task<string> GetAuthorizationEndpointAsync()
         {
             OpenIdConnectConfiguration doc = await GetDiscoveryDocumentAsync();
-            return doc.AuthorizationEndpoint;
+            string endpoint = doc.AuthorizationEndpoint;
+
+            // If using an internal issuer, replace the internal host with the public issuer
+            // so the browser can reach Keycloak
+            if (!string.IsNullOrEmpty(_settings.InternalIssuer) &&
+                endpoint.StartsWith(_settings.InternalIssuer.TrimEnd('/')))
+            {
+                endpoint = _settings.Issuer.TrimEnd('/') +
+                    endpoint[_settings.InternalIssuer.TrimEnd('/').Length..];
+            }
+
+            return endpoint;
         }
 
+        /// <summary>
+        /// Returns the end-session endpoint using the public Issuer URL (for browser redirects).
+        /// </summary>
         public async Task<string> GetEndSessionEndpointAsync()
         {
             OpenIdConnectConfiguration doc = await GetDiscoveryDocumentAsync();
-            return doc.EndSessionEndpoint;
+            string endpoint = doc.EndSessionEndpoint;
+
+            // Replace internal host with public issuer for browser access
+            if (!string.IsNullOrEmpty(_settings.InternalIssuer) &&
+                endpoint.StartsWith(_settings.InternalIssuer.TrimEnd('/')))
+            {
+                endpoint = _settings.Issuer.TrimEnd('/') +
+                    endpoint[_settings.InternalIssuer.TrimEnd('/').Length..];
+            }
+
+            return endpoint;
         }
 
         public async Task<TokenResponse> ExchangeCodeAsync(string code, string codeVerifier, string redirectUri)

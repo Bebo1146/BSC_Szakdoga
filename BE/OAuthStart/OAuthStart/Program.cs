@@ -74,7 +74,7 @@ namespace OAuthStart
 
             string myBackendClient = """
             {
-              "clientId": "my-backend-client3",
+              "clientId": "my-backend-client6",
               "name": "Backend OAuth Code Flow Client",
               "enabled": true,
               "protocol": "openid-connect",
@@ -83,7 +83,9 @@ namespace OAuthStart
               "directAccessGrantsEnabled": false,
               "serviceAccountsEnabled": false,
               "redirectUris": [
+                "https://localhost:7037/api/auth/callback",
                 "http://localhost:5215/api/auth/callback",
+                "http://localhost:4200/api/auth/callback",
                 "http://localhost:4200/auth-callback",
                 "https://oauth.pstmn.io/v1/callback"
               ],
@@ -94,7 +96,7 @@ namespace OAuthStart
               ],
               "attributes": {
                 "pkce.code.challenge.method": "S256",
-                "post.logout.redirect.uris": "http://localhost:3000"
+                "post.logout.redirect.uris": "http://localhost:4200"
               }
             }
             """;

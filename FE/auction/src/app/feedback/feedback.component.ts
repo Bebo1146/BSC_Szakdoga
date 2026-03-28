@@ -20,9 +20,10 @@ export class FeedbackComponent implements OnInit {
   private feedbackService = inject(FeedbackService);
 
   productId: string | null = null;
-  rating = 0;
+  rating = 3; // default 3 stars
   hoveredRating = 0;
   comment = '';
+  submitted = false;
 
   loading = false;
   success = '';
@@ -43,9 +44,15 @@ export class FeedbackComponent implements OnInit {
   }
 
   submit(): void {
+    this.submitted = true;
+
     if (!this.productId) return;
     if (this.rating === 0) {
-      this.error = 'Please select a rating.';
+      this.error = 'Please select at least 1 star.';
+      return;
+    }
+    if (!this.comment.trim()) {
+      this.error = 'Please write a comment.';
       return;
     }
 
@@ -56,7 +63,7 @@ export class FeedbackComponent implements OnInit {
     this.feedbackService
       .submitFeedback(this.productId, {
         rating: this.rating,
-        comment: this.comment || null,
+        comment: this.comment.trim(),
       })
       .subscribe({
         next: () => {

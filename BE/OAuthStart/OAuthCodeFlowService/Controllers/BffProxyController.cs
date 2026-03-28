@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using OAuthCodeFlowService.Services;
-using ServicesHoster.Services;
 
 namespace OAuthCodeFlowService.Controllers
 {
@@ -16,20 +15,21 @@ namespace OAuthCodeFlowService.Controllers
         private readonly ITokenService _tokenService;
         private readonly IHttpClientFactory _httpFactory;
         private readonly ILogger<BffProxyController> _logger;
-
-        // Base URL of the internal Products service (adjust if different)
-        private const string ProductsServiceBase = "http://localhost:5124/api/products";
+        private readonly string _productsServiceBase;
 
         public BffProxyController(
             ISessionRepository sessions,
             ITokenService tokenService,
             IHttpClientFactory httpFactory,
-            ILogger<BffProxyController> logger)
+            ILogger<BffProxyController> logger,
+            IConfiguration configuration)
         {
             _sessions = sessions;
             _tokenService = tokenService;
             _httpFactory = httpFactory;
             _logger = logger;
+            _productsServiceBase = configuration.GetValue<string>("Services:ProductsApiBase")
+                ?? "https://localhost:7093/api/products";
         }
 
         // Helper: ensure session exists and access token is fresh (refresh if needed)
@@ -101,7 +101,7 @@ namespace OAuthCodeFlowService.Controllers
             HttpClient client = _httpFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
 
-            HttpResponseMessage resp = await client.GetAsync($"{ProductsServiceBase}/getall");
+            HttpResponseMessage resp = await client.GetAsync($"{_productsServiceBase}/getall");
             string content = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -122,7 +122,7 @@ namespace OAuthCodeFlowService.Controllers
             HttpClient client = _httpFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
 
-            HttpResponseMessage resp = await client.GetAsync($"{ProductsServiceBase}/my-products");
+            HttpResponseMessage resp = await client.GetAsync($"{_productsServiceBase}/my-products");
             string content = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -143,7 +143,7 @@ namespace OAuthCodeFlowService.Controllers
             HttpClient client = _httpFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
 
-            HttpResponseMessage resp = await client.GetAsync($"{ProductsServiceBase}/my-bids");
+            HttpResponseMessage resp = await client.GetAsync($"{_productsServiceBase}/my-bids");
             string content = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -167,7 +167,7 @@ namespace OAuthCodeFlowService.Controllers
             string json = JsonSerializer.Serialize(body);
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/addMultiple", content);
+            HttpResponseMessage resp = await client.PostAsync($"{_productsServiceBase}/addMultiple", content);
             string respContent = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -191,7 +191,7 @@ namespace OAuthCodeFlowService.Controllers
             string json = JsonSerializer.Serialize(body);
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/{Uri.EscapeDataString(id)}/bid", content);
+            HttpResponseMessage resp = await client.PostAsync($"{_productsServiceBase}/{Uri.EscapeDataString(id)}/bid", content);
             string respContent = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -212,7 +212,7 @@ namespace OAuthCodeFlowService.Controllers
             HttpClient client = _httpFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
 
-            HttpResponseMessage resp = await client.GetAsync($"{ProductsServiceBase}/{Uri.EscapeDataString(id)}");
+            HttpResponseMessage resp = await client.GetAsync($"{_productsServiceBase}/{Uri.EscapeDataString(id)}");
             string content = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -233,7 +233,7 @@ namespace OAuthCodeFlowService.Controllers
             HttpClient client = _httpFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
 
-            HttpResponseMessage resp = await client.GetAsync($"{ProductsServiceBase}/user-info");
+            HttpResponseMessage resp = await client.GetAsync($"{_productsServiceBase}/user-info");
             string content = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -262,7 +262,7 @@ namespace OAuthCodeFlowService.Controllers
             string json = JsonSerializer.Serialize(ids);
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/mark-sold", content);
+            HttpResponseMessage resp = await client.PostAsync($"{_productsServiceBase}/mark-sold", content);
             string respContent = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -275,7 +275,7 @@ namespace OAuthCodeFlowService.Controllers
 
         // POST api/bff/products/{id}/feedback
         [HttpPost("products/{id}/feedback")]
-        public async Task<IActionResult> AddFeedback(string id, [FromBody] FeedbackDto? feedback)
+        public async Task<IActionResult> AddFeedback(string id, [FromBody] JsonElement? feedback)
         {
             if (feedback is null)
             {
@@ -291,7 +291,7 @@ namespace OAuthCodeFlowService.Controllers
             string json = JsonSerializer.Serialize(feedback);
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/{Uri.EscapeDataString(id)}/feedback", content);
+            HttpResponseMessage resp = await client.PostAsync($"{_productsServiceBase}/{Uri.EscapeDataString(id)}/feedback", content);
             string respContent = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -312,7 +312,7 @@ namespace OAuthCodeFlowService.Controllers
             HttpClient client = _httpFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
 
-            HttpResponseMessage resp = await client.GetAsync($"{ProductsServiceBase}/my-received-feedback");
+            HttpResponseMessage resp = await client.GetAsync($"{_productsServiceBase}/my-received-feedback");
             string content = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -336,7 +336,7 @@ namespace OAuthCodeFlowService.Controllers
             string json = JsonSerializer.Serialize(body);
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/mark-rejected", content);
+            HttpResponseMessage resp = await client.PostAsync($"{_productsServiceBase}/mark-rejected", content);
             string respContent = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult
@@ -365,7 +365,7 @@ namespace OAuthCodeFlowService.Controllers
             string json = JsonSerializer.Serialize(ids);
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            HttpResponseMessage resp = await client.PostAsync($"{ProductsServiceBase}/mark-accepted", content);
+            HttpResponseMessage resp = await client.PostAsync($"{_productsServiceBase}/mark-accepted", content);
             string respContent = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult

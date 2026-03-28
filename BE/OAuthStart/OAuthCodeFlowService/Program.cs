@@ -6,8 +6,6 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 // Configure OAuth settings
 builder.Services.Configure<OAuthSettings>(
@@ -21,8 +19,6 @@ builder.Services.AddSingleton<IAuthorizationStateStore, InMemoryAuthorizationSta
 string? redisConn = builder.Configuration.GetValue<string>("Redis:ConnectionString");
 if (!string.IsNullOrEmpty(redisConn))
 {
-    // Example: builder.Services.AddSingleton<ISessionRepository>(_ => new RedisSessionRepository(redisConn));
-    // (Add StackExchange.Redis and implement RedisSessionRepository as shown earlier if you want production scale)
     builder.Services.AddSingleton<ISessionRepository, InMemorySessionRepository>(); // fallback until Redis implemented
 }
 else
@@ -50,17 +46,7 @@ builder.Services.AddCors(options =>
 
 WebApplication app = builder.Build();
 
-//// Configure the HTTP request pipeline
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
-
 app.UseCors("AllowFrontend");
-
-// (Optional) Add session middleware here if you implement it
-// app.UseSessionAuthentication();
 
 app.UseAuthorization();
 app.MapControllers();

@@ -16,7 +16,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ServicesHoster\ServicesHoster.csproj" />
       <ProjectReference Include="..\TokenValidation\TokenValidation.csproj" />
     </ItemGroup>
 

@@ -13,7 +13,7 @@ namespace OAuthCodeFlowService.Hubs
     public class AuctionHub : Hub
     {
         private const string SessionCookieName = "session_id";
-        private const string UpstreamHubUrl = "http://localhost:5124/hubs/auction";
+        private const string UpstreamHubUrl = "https://localhost:7093/hubs/auction";
 
         private readonly ISessionRepository _sessions;
         private readonly IHubContext<AuctionHub> _hubContext;
