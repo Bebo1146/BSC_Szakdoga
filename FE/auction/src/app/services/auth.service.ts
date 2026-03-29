@@ -23,7 +23,8 @@ const STORAGE_USER_ID = 'auth.userId';
 })
 export class AuthService {
   private backendBase = '';
-  private frontendCallback = 'http://localhost:4200/auth-callback';
+  //private frontendCallback = 'http://localhost:4200/auth-callback';
+  private frontendCallback = '/auth-callback';
 
   // seed BehaviorSubjects from localStorage so values survive page refresh
   private _preferredName = new BehaviorSubject<string | null>(

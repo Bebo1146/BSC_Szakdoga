@@ -1,0 +1,48 @@
+﻿# ─── Main app ingress (frontend) ───
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auction-ingress
+  namespace: auction
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "86400"
+    nginx.ingress.kubernetes.io/websocket-services: "frontend"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - auction.local
+      secretName: auction-tls
+  rules:
+    - host: auction.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80
+
+---
+# ─── Keycloak ingress (browser OIDC redirects) ───
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak-ingress
+  namespace: auction
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: keycloak.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
+                port:
+                  number: 8080

@@ -13,7 +13,7 @@ namespace SecretHandling.Repositories
         public InMemorySecretRepository()
         {
             // Seed the in-memory store with the client secret for local/dev use
-            _store["my-backend-client5"] = new Secret(Encoding.UTF8.GetBytes("UFYi4I9A9wLKrqX6Z6MLVfxQSqE7KXIK"));
+            _store["my-backend-client6"] = new Secret(Encoding.UTF8.GetBytes("4BSQV6aMZACSrcOX3ypkK2UCgTgL8rO8"));
         }
 
         public Secret Read(string clientId)

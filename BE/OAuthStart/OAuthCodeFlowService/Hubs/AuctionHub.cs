@@ -13,7 +13,7 @@ namespace OAuthCodeFlowService.Hubs
     public class AuctionHub : Hub
     {
         private const string SessionCookieName = "session_id";
-        private const string UpstreamHubUrl = "https://localhost:7093/hubs/auction";
+        private readonly string _upstreamHubUrl;
 
         private readonly ISessionRepository _sessions;
         private readonly IHubContext<AuctionHub> _hubContext;
@@ -25,11 +25,14 @@ namespace OAuthCodeFlowService.Hubs
         public AuctionHub(
             ISessionRepository sessions,
             IHubContext<AuctionHub> hubContext,
-            ILogger<AuctionHub> logger)
+            ILogger<AuctionHub> logger,
+            IConfiguration configuration)
         {
             _sessions = sessions;
             _hubContext = hubContext;
             _logger = logger;
+            _upstreamHubUrl = configuration.GetValue<string>("Services:AuctionHubUrl")
+                ?? "https://localhost:7093/hubs/auction";
         }
 
         public override async Task OnConnectedAsync()
@@ -55,13 +58,18 @@ namespace OAuthCodeFlowService.Hubs
 
             // Create upstream connection using THIS client's token
             HubConnection upstream = new HubConnectionBuilder()
-                .WithUrl(UpstreamHubUrl, options =>
+                .WithUrl(_upstreamHubUrl, options =>
                 {
                     options.AccessTokenProvider = () =>
                     {
                         // Re-read session on each reconnect to get refreshed token
                         SessionInfo? current = _sessions.Get(sessionId);
                         return Task.FromResult(current?.AccessToken);
+                    };
+                    // Skip SSL validation for internal Docker communication
+                    options.HttpMessageHandlerFactory = _ => new HttpClientHandler
+                    {
+                        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                     };
                 })
                 .WithAutomaticReconnect()

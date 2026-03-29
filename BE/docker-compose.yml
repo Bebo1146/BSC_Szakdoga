@@ -8,6 +8,7 @@
       POSTGRES_PASSWORD: keycloakpass
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     networks:
       - app-network
 
@@ -15,6 +16,7 @@
     image: quay.io/keycloak/keycloak:latest
     command:
       - start-dev
+      - --import-realm
       - --spi-theme-cache-themes=false
       - --spi-theme-cache-templates=false
       - --spi-theme-static-max-age=-1
@@ -33,6 +35,7 @@
       - "8080:8080"
     volumes:
       - ./themes:/opt/keycloak/themes
+      - ./realm-export/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
     depends_on:
       - postgres
     healthcheck:
@@ -57,7 +60,8 @@
       - Auth__Authority=http://keycloak:8080/realms/dev-realm
       - Auth__ValidIssuer=http://localhost:8080/realms/dev-realm
       - Auth__RequireHttpsMetadata=false
-      - Storage__Type=InMemory
+      - Storage__Type=Postgres
+      - ConnectionStrings__AuctionDb=Host=postgres;Port=5432;Database=auctiondb;Username=keycloak;Password=keycloakpass
     depends_on:
       keycloak:
         condition: service_healthy
@@ -76,14 +80,14 @@
       - ASPNETCORE_URLS=http://+:8080
       - OAuth__Issuer=http://localhost:8080/realms/dev-realm
       - OAuth__InternalIssuer=http://keycloak:8080/realms/dev-realm
-      - OAuth__ClientId=my-backend-client6
-      - OAuth__ClientSecret=4BSQV6aMZACSrcOX3ypkK2UCgTgL8rO8
-      - OAuth__RedirectUri=http://localhost:4200/api/auth/callback
-      - OAuth__PostLogoutRedirectUri=http://localhost:4200
+      - OAuth__ClientId=my-backend-client
+      - OAuth__ClientSecret=F55vBXMCgtYVLxtn6OD0prfXxqYopaef
+      - OAuth__RedirectUri=https://localhost:4443/api/auth/callback
+      - OAuth__PostLogoutRedirectUri=https://localhost:4443
       - Services__ProductsApiBase=http://services-hoster:8080/api/products
-      - Cors__AllowedOrigins__0=http://localhost:4200
-      - Cors__AllowedOrigins__1=http://localhost:3000
-      - Cors__AllowedOrigins__2=http://localhost:5173
+      - Services__AuctionHubUrl=http://services-hoster:8080/hubs/auction
+      - Cors__AllowedOrigins__0=https://localhost:4443
+      - Cors__AllowedOrigins__1=http://localhost:4200
     depends_on:
       keycloak:
         condition: service_healthy
@@ -102,6 +106,21 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+    networks:
+      - app-network
+
+  # ─── Angular Frontend (Nginx + HTTPS) ───
+  frontend:
+    build:
+      context: ../FE/auction
+      dockerfile: Dockerfile
+    ports:
+      - "4443:443"
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - oauth-service
+      - payments
     networks:
       - app-network
 

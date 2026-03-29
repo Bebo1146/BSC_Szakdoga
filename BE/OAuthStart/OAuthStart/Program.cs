@@ -74,7 +74,7 @@ namespace OAuthStart
 
             string myBackendClient = """
             {
-              "clientId": "my-backend-client6",
+              "clientId": "my-backend-client",
               "name": "Backend OAuth Code Flow Client",
               "enabled": true,
               "protocol": "openid-connect",
@@ -83,20 +83,24 @@ namespace OAuthStart
               "directAccessGrantsEnabled": false,
               "serviceAccountsEnabled": false,
               "redirectUris": [
-                "https://localhost:7037/api/auth/callback",
-                "http://localhost:5215/api/auth/callback",
+                "https://localhost:4443/api/auth/callback",
+                "https://localhost:4443/auth-callback",
+                "https://localhost:4443/*",
                 "http://localhost:4200/api/auth/callback",
                 "http://localhost:4200/auth-callback",
+                "https://localhost:7037/api/auth/callback",
+                "http://localhost:5215/api/auth/callback",
                 "https://oauth.pstmn.io/v1/callback"
               ],
               "webOrigins": [
+                "https://localhost:4443",
+                "http://localhost:4200",
                 "http://localhost:3000",
-                "http://localhost:5173",
-                "http://localhost:4200"
+                "http://localhost:5173"
               ],
               "attributes": {
                 "pkce.code.challenge.method": "S256",
-                "post.logout.redirect.uris": "http://localhost:4200"
+                "post.logout.redirect.uris": "https://localhost:4443##http://localhost:4200"
               }
             }
             """;
@@ -118,11 +122,11 @@ namespace OAuthStart
             //  ]
             //}
 
-            JsonDocument clientCredToRegister = JsonDocument.Parse(clientCredJson);
+            //JsonDocument clientCredToRegister = JsonDocument.Parse(clientCredJson);
 
             ClientRegister clientRegister = new ClientRegister();
 
-            await clientRegister.RegisterAsync(myBackendClientToRegister, new Uri("http://localhost:8080/admin/realms/dev-realm/clients"), token);
+            await clientRegister.RegisterOrUpdateAsync(myBackendClientToRegister, new Uri("http://localhost:8080/admin/realms/dev-realm/clients"), token);
 
             //try
             //{
@@ -155,10 +159,10 @@ namespace OAuthStart
             //    Console.WriteLine($"Error registering client: {ex.Message}");
             //}
 
-            ClientCredentialsFlowClient clientCredentialsFlowClient =
-                new ClientCredentialsFlowClient(new Uri(devDiscoveryDocument.TokenEndpoint), "svc-client", "9rOkTdgyfDPgQ6lFN9LRewXLUkLYSxNt");
+            //ClientCredentialsFlowClient clientCredentialsFlowClient =
+            //    new ClientCredentialsFlowClient(new Uri(devDiscoveryDocument.TokenEndpoint), "svc-client", "9rOkTdgyfDPgQ6lFN9LRewXLUkLYSxNt");
 
-            string clientCredToken = await clientCredentialsFlowClient.GetTokenAsync();
+            //string clientCredToken = await clientCredentialsFlowClient.GetTokenAsync();
 
             RealmRegister realmRegister = new RealmRegister();
 
@@ -259,10 +263,10 @@ namespace OAuthStart
 
             JsonDocument asd = await roleRepository.GetUserRolesAsync(serviceAccountUserId, token);
 
-            ClientCredentialsFlowClient userCreateionClientCred =
-                new ClientCredentialsFlowClient(new Uri(devDiscoveryDocument.TokenEndpoint), "User_Registration_Client", "tM6IEzJ1whXnPLFZvoSHzBVDuXdEeSLE");
+            //ClientCredentialsFlowClient userCreateionClientCred =
+            //    new ClientCredentialsFlowClient(new Uri(devDiscoveryDocument.TokenEndpoint), "User_Registration_Client", "tM6IEzJ1whXnPLFZvoSHzBVDuXdEeSLE");
 
-            string userRegToken = await userCreateionClientCred.GetTokenAsync();
+            //string userRegToken = await userCreateionClientCred.GetTokenAsync();
 
             string userToWithClient = """
                 {
@@ -300,10 +304,10 @@ namespace OAuthStart
                 //    userRegToken
                 //);
 
-                ResourceOwnerPasswordCredentialsFlowClient UserROPC =
-                    new ResourceOwnerPasswordCredentialsFlowClient(new Uri(devDiscoveryDocument.TokenEndpoint), "ropc-client", "john", "newPassword1234");
+                //ResourceOwnerPasswordCredentialsFlowClient UserROPC =
+                //    new ResourceOwnerPasswordCredentialsFlowClient(new Uri(devDiscoveryDocument.TokenEndpoint), "ropc-client", "john", "newPassword1234");
 
-                string userToken = await UserROPC.GetTokenAsync();
+                //string userToken = await UserROPC.GetTokenAsync();
 
                 string myappWeb = """
                 {
@@ -339,7 +343,7 @@ namespace OAuthStart
 
                 JsonDocument myappWebRegister = JsonDocument.Parse(myappWeb);
 
-                await clientRegister.RegisterAsync(myappWebRegister, new Uri("http://localhost:8080/admin/realms/dev-realm/clients"), token);
+                //await clientRegister.RegisterAsync(myappWebRegister, new Uri("http://localhost:8080/admin/realms/dev-realm/clients"), token);
 
                 // http://localhost:8080/realms/dev-realm/protocol/openid-connect/auth?client_id=myapp-web&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&response_type=code&scope=openid&prompt=create
             }

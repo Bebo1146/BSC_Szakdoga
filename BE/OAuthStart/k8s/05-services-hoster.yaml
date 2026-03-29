@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: services-hoster
+  namespace: auction
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: services-hoster
+  template:
+    metadata:
+      labels:
+        app: services-hoster
+    spec:
+      initContainers:
+        - name: wait-for-keycloak
+          image: busybox:1.36
+          imagePullPolicy: Never
+          command:
+            - sh
+            - -c
+            - "until nc -z keycloak 8080; do echo 'waiting for keycloak...'; sleep 5; done"
+      containers:
+        - name: services-hoster
+          image: services-hoster:local
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: ASPNETCORE_URLS
+              value: "http://+:8080"
+            - name: Auth__Authority
+              value: "http://keycloak:8080/realms/dev-realm"
+            - name: Auth__ValidIssuer
+              value: "http://keycloak.local:9080/realms/dev-realm"
+            - name: Auth__RequireHttpsMetadata
+              value: "false"
+            - name: Storage__Type
+              value: Postgres
+            - name: ConnectionStrings__AuctionDb
+              value: "Host=postgres;Port=5432;Database=auctiondb;Username=keycloak;Password=keycloakpass"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: services-hoster
+  namespace: auction
+spec:
+  selector:
+    app: services-hoster
+  ports:
+    - port: 8080
+      targetPort: 8080
