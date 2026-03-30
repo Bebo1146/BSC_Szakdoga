@@ -32,6 +32,9 @@ spec:
             - --spi-theme-cache-templates=false
             - --spi-theme-static-max-age=-1
             - --health-enabled=true
+            - --proxy-headers=xforwarded
+            - --hostname=https://keycloak.local:9443
+            - --hostname-backchannel-dynamic=true
           ports:
             - containerPort: 8080
             - containerPort: 9000
@@ -47,10 +50,6 @@ spec:
               value: keycloak
             - name: KC_HTTP_ENABLED
               value: "true"
-            - name: KC_HOSTNAME_URL
-              value: "http://keycloak.local:9080"
-            - name: KC_HOSTNAME_ADMIN_URL
-              value: "http://keycloak.local:9080"
           volumeMounts:
             - name: realm-import
               mountPath: /opt/keycloak/data/import

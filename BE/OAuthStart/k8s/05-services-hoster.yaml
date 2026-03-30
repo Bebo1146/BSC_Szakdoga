@@ -35,7 +35,7 @@ spec:
             - name: Auth__Authority
               value: "http://keycloak:8080/realms/dev-realm"
             - name: Auth__ValidIssuer
-              value: "http://keycloak.local:9080/realms/dev-realm"
+              value: "https://keycloak.local:9443/realms/dev-realm"
             - name: Auth__RequireHttpsMetadata
               value: "false"
             - name: Storage__Type

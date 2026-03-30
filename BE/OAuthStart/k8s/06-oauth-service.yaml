@@ -36,7 +36,7 @@ spec:
             - name: ASPNETCORE_URLS
               value: "http://+:8080"
             - name: OAuth__Issuer
-              value: "http://keycloak.local:9080/realms/dev-realm"
+              value: "https://keycloak.local:9443/realms/dev-realm"
             - name: OAuth__InternalIssuer
               value: "http://keycloak:8080/realms/dev-realm"
             - name: OAuth__RedirectUri
