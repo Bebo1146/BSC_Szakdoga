@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -12,27 +11,18 @@ import { AuthService } from '../services/auth.service';
 })
 export class LoginComponent {
   private authService = inject(AuthService);
-  private router = inject(Router);
-
-  error = '';
 
   ngOnInit(): void {
-    // Start the OAuth flow automatically when the component is loaded
-    this.onSubmit();
-  }
-
-  onSubmit(): void {
-    this.error = '';
-    // Start OAuth flow (backend will build Keycloak URL and return it)
-    this.authService.login()
-    .subscribe({
-      next: () => {
-        // navigation won't happen because browser will be redirected to Keycloak
-        // keep this here as a fallback
-        this.router.navigate(['/']);
+    this.authService.login().subscribe({
+      next: (response: any) => {
+        // If the backend returns a redirect URL, navigate there
+        const redirectUrl = response?.redirectUrl ?? response?.url ?? response;
+        if (typeof redirectUrl === 'string') {
+          window.location.href = redirectUrl;
+        }
       },
       error: () => {
-        this.error = 'Login failed';
+        // Only show the page if login initiation fails
       },
     });
   }

@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../navbar/navbar';
@@ -25,6 +26,7 @@ import {
 export class ProductComponent implements OnDestroy {
   private readonly productService = inject(ProductService);
   private readonly auctionHub = inject(AuctionSignalService);
+  private readonly router = inject(Router);
   private hubSubscription?: Subscription;
 
   readonly ProductStatus = ProductStatus;
@@ -73,9 +75,12 @@ export class ProductComponent implements OnDestroy {
         this.connectToHub();
       },
       error: (err) => {
-        this.loading.set(false);
+        this.loading.set(false);  
         this.error.set('Failed to load products.');
         console.error(err);
+        if (err.status === 401 || err.status === 403) {
+          this.router.navigate(['/login']);
+        }
       },
     });
   }

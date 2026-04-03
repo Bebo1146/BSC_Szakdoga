@@ -128,6 +128,9 @@ export class MyBidsComponent implements OnInit, OnDestroy {
         this.loading.set(false);
         this.error.set('Failed to load products.');
         console.error(err);
+        if (err.status === 401 || err.status === 403) {
+          this.router.navigate(['/login']);
+        }
       },
     });
   }

@@ -16,6 +16,7 @@ namespace OAuthCodeFlowService.Controllers
         private readonly IHttpClientFactory _httpFactory;
         private readonly ILogger<BffProxyController> _logger;
         private readonly string _productsServiceBase;
+        private readonly string? _cookieDomain;
 
         public BffProxyController(
             ISessionRepository sessions,
@@ -30,6 +31,9 @@ namespace OAuthCodeFlowService.Controllers
             _logger = logger;
             _productsServiceBase = configuration.GetValue<string>("Services:ProductsApiBase")
                 ?? "https://localhost:7093/api/products";
+
+            // Read cookie domain from environment/config (matches OAuth__CookieDomain env var)
+            _cookieDomain = configuration.GetValue<string>("OAuth__CookieDomain");
         }
 
         // Helper: ensure session exists and access token is fresh (refresh if needed)
@@ -75,6 +79,12 @@ namespace OAuthCodeFlowService.Controllers
                         Expires = updated.ExpiresAt.UtcDateTime,
                         IsEssential = true
                     };
+
+                    if (!string.IsNullOrEmpty(_cookieDomain))
+                    {
+                        cookieOptions.Domain = _cookieDomain;
+                    }
+
                     Response.Cookies.Append(SessionCookieName, sessionId, cookieOptions);
 
                     session = updated;

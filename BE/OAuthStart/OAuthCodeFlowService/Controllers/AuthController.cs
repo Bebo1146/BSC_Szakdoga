@@ -141,17 +141,8 @@ namespace OAuthCodeFlowService.Controllers
 
                 string sessionId = _sessionRepository.Create(sessionInfo);
 
-                // Set SameSite and Secure conditionally for local dev vs production:
-                CookieOptions cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = Request.IsHttps,
-                    SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax,
-                    Expires = sessionInfo.ExpiresAt.UtcDateTime,
-                    IsEssential = true
-                };
-
-                Response.Cookies.Append(SessionCookieName, sessionId, cookieOptions);
+                // Use helper that sets Domain when configured
+                Response.Cookies.Append(SessionCookieName, sessionId, BuildSessionCookieOptions(sessionInfo.ExpiresAt));
 
                 _logger.LogInformation("Session created: {SessionId} (expires {Expires}) pref={Preferred}", sessionId, sessionInfo.ExpiresAt, preferredName);
 
@@ -230,18 +221,7 @@ namespace OAuthCodeFlowService.Controllers
                     userid);
                 string sessionId = _sessionRepository.Create(sessionInfo);
 
-                CookieOptions cookieOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = Request.IsHttps,
-                    SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax,
-                    //SameSite = SameSiteMode.None, // allow cross-site requests (needed for XHR from different origin)
-                    //Path = "/",
-                    Expires = sessionInfo.ExpiresAt.UtcDateTime,
-                    IsEssential = true
-                };
-
-                Response.Cookies.Append(SessionCookieName, sessionId, cookieOptions);
+                Response.Cookies.Append(SessionCookieName, sessionId, BuildSessionCookieOptions(sessionInfo.ExpiresAt));
 
                 _logger.LogInformation("Session created: {SessionId} (expires {Expires}) pref={Preferred}", sessionId, sessionInfo.ExpiresAt, preferredName);
 
@@ -346,5 +326,37 @@ namespace OAuthCodeFlowService.Controllers
         /// </summary>
         [HttpGet("health")]
         public IActionResult Health() => Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+
+        /// <summary>
+        /// Builds consistent cookie options for session cookies.
+        /// Sets Domain when CookieDomain is configured (to share across subdomains).
+        /// </summary>
+        private CookieOptions BuildSessionCookieOptions(DateTimeOffset expiresAt)
+        {
+            // If a CookieDomain is configured we need to make the cookie usable across subdomains:
+            //  - set Domain to the configured value (leading dot: ".auction.local")
+            //  - set SameSite=None and Secure=true so browsers will send the cookie cross-site over HTTPS
+            CookieOptions options = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = expiresAt.UtcDateTime,
+                IsEssential = true
+            };
+
+            if (!string.IsNullOrEmpty(_settings.CookieDomain))
+            {
+                options.Domain = _settings.CookieDomain; // ".auction.local"
+                options.SameSite = SameSiteMode.None;
+                options.Secure = true; // required for SameSite=None
+            }
+            else
+            {
+                // local/dev fallback: preserve previous behavior based on Request.IsHttps
+                options.Secure = Request.IsHttps;
+                options.SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax;
+            }
+
+            return options;
+        }
     }
 }

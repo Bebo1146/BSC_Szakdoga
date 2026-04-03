@@ -19,7 +19,7 @@ export class AuctionSignalService implements OnDestroy {
     if (this.hubConnection) return;
 
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl('http://localhost:5215/hubs/auction', {
+      .withUrl('/hubs/auction', {
         withCredentials: true
       })
       .withAutomaticReconnect()

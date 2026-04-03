@@ -3,7 +3,6 @@
   min-height: 100vh;
   background: #f6f7fb;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color: #111827;
 }
 
 .login-container {
@@ -11,7 +10,6 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 20px;
 }
 
 .login-form {
@@ -105,4 +103,9 @@ button[type="submit"] {
   font-size: 13px;
   font-weight: 700;
   text-align: center;
+}
+
+.redirect-msg {
+  color: #6b7280;
+  font-size: 16px;
 }

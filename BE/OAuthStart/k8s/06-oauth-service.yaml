@@ -43,6 +43,8 @@ spec:
               value: "https://auction.local:9443/api/auth/callback"
             - name: OAuth__PostLogoutRedirectUri
               value: "https://auction.local:9443"
+            - name: OAuth__CookieDomain
+              value: ".auction.local"
             - name: Services__ProductsApiBase
               value: "http://services-hoster:8080/api/products"
             - name: Services__AuctionHubUrl
@@ -51,6 +53,8 @@ spec:
               value: "https://auction.local:9443"
             - name: Cors__AllowedOrigins__1
               value: "http://localhost:4200"
+            - name: Cors__AllowedOrigins__2
+              value: "https://admin.auction.local:9443"
 
 ---
 apiVersion: v1
