@@ -17,6 +17,8 @@ export class Navbar {
 
   storeName: string | null = null;
 
+  readonly isAdminDomain = window.location.hostname === 'admin.auction.local' && window.location.port === '9443';
+
   constructor() {
     this.authService.preferredName$
     .subscribe(name => {

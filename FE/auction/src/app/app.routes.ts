@@ -9,6 +9,7 @@ import { PaymentComponent } from './payments/payment.component';
 import { FeedbackComponent } from './feedback/feedback.component';
 import { FeedbacksComponent } from './feedbacks/feedbacks.component';
 import { AdminProductsComponent } from './admin-products/admin-products.component';
+import { adminDomainGuard } from './guards/admin-domain.guard';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -19,7 +20,11 @@ export const routes: Routes = [
   { path: 'payments', component: PaymentComponent },
   { path: 'feedback', component: FeedbackComponent },
   { path: 'feedbacks', component: FeedbacksComponent },
-  { path: 'admin', component: AdminProductsComponent }
+  {
+    path: 'admin',
+    component: AdminProductsComponent,
+    canActivate: [adminDomainGuard]
+  }
   // optionally a redirect
   // { path: '', redirectTo: '/home', pathMatch: 'full' },
 ];
