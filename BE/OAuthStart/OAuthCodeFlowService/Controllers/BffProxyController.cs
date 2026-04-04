@@ -16,6 +16,7 @@ namespace OAuthCodeFlowService.Controllers
         private readonly IHttpClientFactory _httpFactory;
         private readonly ILogger<BffProxyController> _logger;
         private readonly string _productsServiceBase;
+        private readonly string _paymentsServiceBase;  // new
         private readonly string? _cookieDomain;
 
         public BffProxyController(
@@ -31,8 +32,8 @@ namespace OAuthCodeFlowService.Controllers
             _logger = logger;
             _productsServiceBase = configuration.GetValue<string>("Services:ProductsApiBase")
                 ?? "https://localhost:7093/api/products";
-
-            // Read cookie domain from environment/config (matches OAuth__CookieDomain env var)
+            _paymentsServiceBase = configuration.GetValue<string>("Services:PaymentsApiBase")  // new
+                ?? "http://localhost:5215";
             _cookieDomain = configuration.GetValue<string>("OAuth__CookieDomain");
         }
 

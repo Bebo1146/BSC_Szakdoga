@@ -22,21 +22,23 @@ export interface PaymentResponse {
 export class PaymentService {
   constructor(private http: HttpClient) {}
 
-  private apiUrl = '/api/payments';
+  // Routed through the BFF which handles session/token forwarding to Payments service
+  private apiUrl = '/api/BffProxy/payments';
 
   createPayment(body: PaymentRequest): Observable<PaymentResponse> {
-    return this.http.post<PaymentResponse>(this.apiUrl, body);
+    return this.http.post<PaymentResponse>(this.apiUrl, body, { withCredentials: true });
   }
 
   confirmPayment(id: string): Observable<{ id: string; status: string }> {
     return this.http.post<{ id: string; status: string }>(
       `${this.apiUrl}/${encodeURIComponent(id)}/confirm`,
-      {}
+      {},
+      { withCredentials: true }
     );
   }
 
   getPayment(id: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${encodeURIComponent(id)}`);
+    return this.http.get(`${this.apiUrl}/${encodeURIComponent(id)}`, { withCredentials: true });
   }
 
   finalizePayment(payment: PaymentResponse): Observable<any> {

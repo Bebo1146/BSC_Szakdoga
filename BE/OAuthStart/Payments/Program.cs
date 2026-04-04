@@ -1,19 +1,20 @@
-using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using TokenValidation.TokenValidation.ExtensionMethods;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-});
+
+// JWT validation — same pattern as ServicesHoster
+builder.Services.AddTokenValidation(builder.Configuration);
+
 var app = builder.Build();
 
-app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapPost("/api/payments", async (HttpRequest request) =>
+app.MapPost("/api/payments", [Authorize] async (HttpRequest request) =>
 {
     var req = await request.ReadFromJsonAsync<PaymentRequest>() ?? new PaymentRequest();
     var id = "fake_pi_" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -22,14 +23,13 @@ app.MapPost("/api/payments", async (HttpRequest request) =>
         Id = id,
         Status = "requires_confirmation",
         ClientSecret = "fake_client_secret_" + id,
-        PaymentUrl = $"http://localhost:4200/fake-checkout?paymentId={Uri.EscapeDataString(id)}"
+        PaymentUrl = $"https://auction.local:9443/fake-checkout?paymentId={Uri.EscapeDataString(id)}"
     };
     return Results.Json(res);
 });
 
-app.MapPost("/api/payments/{id}/confirm", (string id) =>
+app.MapPost("/api/payments/{id}/confirm", [Authorize] (string id) =>
 {
-    // simulate webhook / confirmation
     var res = new { id, status = "succeeded" };
     return Results.Json(res);
 });
