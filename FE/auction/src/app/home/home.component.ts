@@ -51,7 +51,6 @@ export class HomeComponent implements OnDestroy {
     description: '',
     category: '',
     status: ProductStatus.Draft,
-    imageUrl: '',
     startingPrice: 0,
     reservePrice: null,
     auctionStartTime: '',

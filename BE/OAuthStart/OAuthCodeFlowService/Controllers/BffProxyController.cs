@@ -101,6 +101,15 @@ namespace OAuthCodeFlowService.Controllers
             return (true, session, sessionId);
         }
 
+        // Requests to admin-only endpoints are routed through the mTLS ingress,
+        // which sets ssl-client-verify: SUCCESS after verifying the client certificate.
+        // This header is stripped by nginx from any external client that tries to forge it.
+        private bool IsAdminRequest() =>
+            string.Equals(
+                Request.Headers["ssl-client-verify"].FirstOrDefault(),
+                "SUCCESS",
+                StringComparison.OrdinalIgnoreCase);
+
         // GET api/bff/products/getall
         [HttpGet("products/getall")]
         public async Task<IActionResult> GetAll()
@@ -266,6 +275,8 @@ namespace OAuthCodeFlowService.Controllers
             (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
             if (!ok || session == null) return Unauthorized();
 
+            if (!IsAdminRequest()) return Forbid();
+
             HttpClient client = _httpFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
 
@@ -337,8 +348,10 @@ namespace OAuthCodeFlowService.Controllers
         [HttpPost("products/mark-rejected")]
         public async Task<IActionResult> MarkProductsAsRejected([FromBody] JsonElement body)
         {
-            (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
+            (bool ok, SessionInfo? session, string? sid) = await EnsureSessionAsync();
             if (!ok || session == null) return Unauthorized();
+
+            if (!IsAdminRequest()) return Forbid();
 
             HttpClient client = _httpFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
@@ -349,25 +362,19 @@ namespace OAuthCodeFlowService.Controllers
             HttpResponseMessage resp = await client.PostAsync($"{_productsServiceBase}/mark-rejected", content);
             string respContent = await resp.Content.ReadAsStringAsync();
 
-            return new ContentResult
-            {
-                Content = respContent,
-                ContentType = "application/json",
-                StatusCode = (int)resp.StatusCode
-            };
+            return new ContentResult { Content = respContent, ContentType = "application/json", StatusCode = (int)resp.StatusCode };
         }
 
-        // POST api/bff/products/mark-accepted
         [HttpPost("products/mark-accepted")]
         public async Task<IActionResult> MarkProductsAsAccepted([FromBody] List<string>? ids)
         {
             if (ids == null || ids.Count == 0)
-            {
                 return BadRequest("No product IDs provided.");
-            }
 
-            (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
+            (bool ok, SessionInfo? session, string? sid) = await EnsureSessionAsync();
             if (!ok || session == null) return Unauthorized();
+
+            if (!IsAdminRequest()) return Forbid();
 
             HttpClient client = _httpFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
@@ -378,12 +385,7 @@ namespace OAuthCodeFlowService.Controllers
             HttpResponseMessage resp = await client.PostAsync($"{_productsServiceBase}/mark-accepted", content);
             string respContent = await resp.Content.ReadAsStringAsync();
 
-            return new ContentResult
-            {
-                Content = respContent,
-                ContentType = "application/json",
-                StatusCode = (int)resp.StatusCode
-            };
+            return new ContentResult { Content = respContent, ContentType = "application/json", StatusCode = (int)resp.StatusCode };
         }
     }
 }

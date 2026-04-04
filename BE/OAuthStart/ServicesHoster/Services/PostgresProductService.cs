@@ -63,7 +63,6 @@ namespace ServicesHoster.Services
                     Description = product.Description,
                     Category = product.Category,
                     Status = product.Status,
-                    ImageUrl = product.ImageUrl,
                     StartingPrice = product.StartingPrice,
                     CurrentBid = product.StartingPrice,
                     AuctionStartTime = DateTime.SpecifyKind(product.AuctionStartTime, DateTimeKind.Utc),
@@ -279,7 +278,6 @@ namespace ServicesHoster.Services
             await db.SaveChangesAsync();
         }
 
-        // ── Mapping ──
         private static ProductDto MapToDto(ProductEntity e) => new()
         {
             Id = e.Id,
@@ -287,7 +285,6 @@ namespace ServicesHoster.Services
             Description = e.Description,
             Category = e.Category,
             Status = e.Status,
-            ImageUrl = e.ImageUrl,
             StartingPrice = e.StartingPrice,
             CurrentBid = e.CurrentBid,
             AuctionStartTime = e.AuctionStartTime,

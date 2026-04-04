@@ -9,7 +9,6 @@ namespace ServicesHoster.Data.Entities
         public string? Description { get; set; }
         public string? Category { get; set; }
         public ProductStatus Status { get; set; }
-        public string? ImageUrl { get; set; }
 
         public int StartingPrice { get; set; }
         public int? CurrentBid { get; set; }

@@ -5,8 +5,8 @@
   <table class="table" *ngIf="!loading && !error">
     <thead>
       <tr>
-        <th class="col-product">PRODUCT</th>
         <th>NAME</th>
+        <th>DESCRIPTION</th>
         <th>STATUS</th>
         <th>CATEGORY</th>
         <th>CURRENT PRICE</th>
@@ -19,22 +19,13 @@
 
     <tbody>
       <tr *ngFor="let p of products" (click)="productClick.emit(p)">
-        <td class="col-product">
-          <div class="thumb">
-            <img
-              *ngIf="p.imageUrl"
-              [src]="p.imageUrl"
-              [alt]="p.name"
-              class="thumb-img"
-              (error)="$any($event.target).style.display='none'"
-            />
-            <span *ngIf="!p.imageUrl">🖼️</span>
-          </div>
-        </td>
 
         <td class="name">
           <div>{{ p.name }}</div>
-          <div class="description muted">{{ p.description }}</div>
+        </td>
+
+        <td class="description muted">
+          {{ p.description }}
         </td>
 
         <td>

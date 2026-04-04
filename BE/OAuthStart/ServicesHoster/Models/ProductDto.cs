@@ -13,7 +13,6 @@ namespace ServicesHoster.Services
         public string? Description { get; set; }
         public string? Category { get; set; }
         public ProductStatus Status { get; set; }
-        public string? ImageUrl { get; set; }
 
         // Auction-specific fields
         public int StartingPrice { get; set; }

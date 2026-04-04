@@ -27,7 +27,7 @@ spec:
                   number: 80
 
 ---
-# ─── Admin ingress (mTLS required, separate hostname) ───
+# ─── Admin ingress (mTLS required) ───
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -50,6 +50,7 @@ spec:
     - host: admin.auction.local
       http:
         paths:
+          # SPA + all admin UI routes
           - path: /
             pathType: Prefix
             backend:
@@ -57,6 +58,28 @@ spec:
                 name: frontend
                 port:
                   number: 80
+          # Admin-only API calls go directly to BFF through mTLS ingress
+          - path: /api/BffProxy/products/mark-accepted
+            pathType: Exact
+            backend:
+              service:
+                name: oauth-service
+                port:
+                  number: 8080
+          - path: /api/BffProxy/products/mark-rejected
+            pathType: Exact
+            backend:
+              service:
+                name: oauth-service
+                port:
+                  number: 8080
+          - path: /api/BffProxy/products/mark-sold
+            pathType: Exact
+            backend:
+              service:
+                name: oauth-service
+                port:
+                  number: 8080
 
 ---
 # ─── Keycloak ingress (HTTPS) ───

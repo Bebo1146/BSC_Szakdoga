@@ -25,8 +25,6 @@ export const routes: Routes = [
     component: AdminProductsComponent,
     canActivate: [adminDomainGuard]
   }
-  // optionally a redirect
-  // { path: '', redirectTo: '/home', pathMatch: 'full' },
 ];
 
 @NgModule({

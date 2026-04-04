@@ -30,7 +30,6 @@ export interface Product {
   description: string;
   category: string;
   status: ProductStatus;
-  imageUrl: string;
   startingPrice: number;
   currentBid: number | null;
   reservePrice: number | null;
@@ -57,7 +56,6 @@ export interface NewProduct {
   description: string;
   category: string;
   status: ProductStatus;
-  imageUrl: string;
   startingPrice: number;
   reservePrice: number | null;
   auctionStartTime: string;
