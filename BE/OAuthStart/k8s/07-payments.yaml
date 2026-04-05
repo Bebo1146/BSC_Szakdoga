@@ -13,6 +13,14 @@ spec:
       labels:
         app: payments
     spec:
+      initContainers:
+        - name: wait-for-keycloak
+          image: busybox:1.36
+          imagePullPolicy: Never
+          command:
+            - sh
+            - -c
+            - "until nc -z keycloak 8080; do echo 'waiting for keycloak...'; sleep 5; done"
       containers:
         - name: payments
           image: payments:local
@@ -24,6 +32,12 @@ spec:
               value: Development
             - name: ASPNETCORE_URLS
               value: "http://+:8080"
+            - name: Auth__Authority
+              value: "http://keycloak:8080/realms/dev-realm"
+            - name: Auth__ValidIssuer
+              value: "https://keycloak.local:9443/realms/dev-realm"
+            - name: Auth__RequireHttpsMetadata
+              value: "false"
 
 ---
 apiVersion: v1

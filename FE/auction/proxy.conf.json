@@ -11,15 +11,11 @@
     "changeOrigin": true,
     "logLevel": "debug"
   },
-  "/api/payments": {
-    "target": "http://localhost:5232",
-    "secure": false,
-    "changeOrigin": true
-  },
   "/hubs": {
     "target": "http://localhost:5215",
     "secure": false,
     "changeOrigin": true,
-    "ws": true
+    "ws": true,
+    "logLevel": "debug"
   }
 }

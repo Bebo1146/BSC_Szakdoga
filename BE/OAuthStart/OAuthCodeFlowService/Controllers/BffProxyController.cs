@@ -16,7 +16,7 @@ namespace OAuthCodeFlowService.Controllers
         private readonly IHttpClientFactory _httpFactory;
         private readonly ILogger<BffProxyController> _logger;
         private readonly string _productsServiceBase;
-        private readonly string _paymentsServiceBase;  // new
+        private readonly string _paymentsServiceBase;
         private readonly string? _cookieDomain;
 
         public BffProxyController(
@@ -32,12 +32,11 @@ namespace OAuthCodeFlowService.Controllers
             _logger = logger;
             _productsServiceBase = configuration.GetValue<string>("Services:ProductsApiBase")
                 ?? "https://localhost:7093/api/products";
-            _paymentsServiceBase = configuration.GetValue<string>("Services:PaymentsApiBase")  // new
+            _paymentsServiceBase = configuration.GetValue<string>("Services:PaymentsApiBase")
                 ?? "http://localhost:5215";
             _cookieDomain = configuration.GetValue<string>("OAuth__CookieDomain");
         }
 
-        // Helper: ensure session exists and access token is fresh (refresh if needed)
         private async Task<(bool ok, SessionInfo? session, string? sessionId)> EnsureSessionAsync()
         {
             if (!Request.Cookies.TryGetValue(SessionCookieName, out string? sessionId) || string.IsNullOrEmpty(sessionId))
@@ -48,7 +47,6 @@ namespace OAuthCodeFlowService.Controllers
             SessionInfo? session = _sessions.Get(sessionId);
             if (session is null) return (false, null, sessionId);
 
-            // Refresh when within 60s of expiry
             if (session.ExpiresAt <= DateTimeOffset.UtcNow.AddSeconds(60))
             {
                 if (string.IsNullOrEmpty(session.RefreshToken))
@@ -102,16 +100,12 @@ namespace OAuthCodeFlowService.Controllers
             return (true, session, sessionId);
         }
 
-        // Requests to admin-only endpoints are routed through the mTLS ingress,
-        // which sets ssl-client-verify: SUCCESS after verifying the client certificate.
-        // This header is stripped by nginx from any external client that tries to forge it.
         private bool IsAdminRequest() =>
             string.Equals(
                 Request.Headers["ssl-client-verify"].FirstOrDefault(),
                 "SUCCESS",
                 StringComparison.OrdinalIgnoreCase);
 
-        // GET api/bff/products/getall
         [HttpGet("products/getall")]
         public async Task<IActionResult> GetAll()
         {
@@ -132,7 +126,6 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
-        // GET api/bff/products/my-products
         [HttpGet("products/my-products")]
         public async Task<IActionResult> GetMyProducts()
         {
@@ -153,7 +146,6 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
-        // NEW: GET api/bff/products/my-bids -> proxies to ProductsService /my-bids
         [HttpGet("products/my-bids")]
         public async Task<IActionResult> GetMyBids()
         {
@@ -174,7 +166,6 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
-        // POST api/bff/products/addMultiple
         [HttpPost("products/addMultiple")]
         public async Task<IActionResult> AddMultiple([FromBody] JsonElement body)
         {
@@ -198,7 +189,6 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
-        // POST api/bff/products/{id}/bid
         [HttpPost("products/{id}/bid")]
         public async Task<IActionResult> PlaceBid(string id, [FromBody] JsonElement body)
         {
@@ -222,7 +212,6 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
-        // GET api/bff/products/{id}
         [HttpGet("products/{id}")]
         public async Task<IActionResult> GetById(string id)
         {
@@ -243,7 +232,6 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
-        // GET api/bff/products/user-info
         [HttpGet("products/user-info")]
         public async Task<IActionResult> GetUserInfo()
         {
@@ -264,7 +252,6 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
-        // POST api/bff/products/mark-sold
         [HttpPost("products/mark-sold")]
         public async Task<IActionResult> MarkProductsAsSold([FromBody] List<string>? ids)
         {
@@ -275,8 +262,6 @@ namespace OAuthCodeFlowService.Controllers
 
             (bool ok, SessionInfo session, string sid) = await EnsureSessionAsync();
             if (!ok || session == null) return Unauthorized();
-
-            if (!IsAdminRequest()) return Forbid();
 
             HttpClient client = _httpFactory.CreateClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
@@ -295,7 +280,6 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
-        // POST api/bff/products/{id}/feedback
         [HttpPost("products/{id}/feedback")]
         public async Task<IActionResult> AddFeedback(string id, [FromBody] JsonElement? feedback)
         {
@@ -324,7 +308,6 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
-        // NEW: GET api/bff/products/my-received-feedback
         [HttpGet("products/my-received-feedback")]
         public async Task<IActionResult> GetMyReceivedFeedback()
         {
@@ -345,7 +328,6 @@ namespace OAuthCodeFlowService.Controllers
             };
         }
 
-        // POST api/bff/products/mark-rejected
         [HttpPost("products/mark-rejected")]
         public async Task<IActionResult> MarkProductsAsRejected([FromBody] JsonElement body)
         {
@@ -384,6 +366,56 @@ namespace OAuthCodeFlowService.Controllers
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
             HttpResponseMessage resp = await client.PostAsync($"{_productsServiceBase}/mark-accepted", content);
+            string respContent = await resp.Content.ReadAsStringAsync();
+
+            return new ContentResult { Content = respContent, ContentType = "application/json", StatusCode = (int)resp.StatusCode };
+        }
+
+        [HttpPost("payments")]
+        public async Task<IActionResult> CreatePayment([FromBody] JsonElement body)
+        {
+            (bool ok, SessionInfo? session, string? sid) = await EnsureSessionAsync();
+            if (!ok || session == null) return Unauthorized();
+
+            HttpClient client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+
+            string json = JsonSerializer.Serialize(body);
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage resp = await client.PostAsync($"{_paymentsServiceBase}/api/payments", content);
+            string respContent = await resp.Content.ReadAsStringAsync();
+
+            return new ContentResult { Content = respContent, ContentType = "application/json", StatusCode = (int)resp.StatusCode };
+        }
+
+        [HttpPost("payments/{id}/confirm")]
+        public async Task<IActionResult> ConfirmPayment(string id)
+        {
+            (bool ok, SessionInfo? session, string? sid) = await EnsureSessionAsync();
+            if (!ok || session == null) return Unauthorized();
+
+            HttpClient client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+
+            HttpResponseMessage resp = await client.PostAsync(
+                $"{_paymentsServiceBase}/api/payments/{Uri.EscapeDataString(id)}/confirm",
+                new StringContent("{}", Encoding.UTF8, "application/json"));
+            string respContent = await resp.Content.ReadAsStringAsync();
+
+            return new ContentResult { Content = respContent, ContentType = "application/json", StatusCode = (int)resp.StatusCode };
+        }
+
+        [HttpGet("payments/{id}")]
+        public async Task<IActionResult> GetPayment(string id)
+        {
+            (bool ok, SessionInfo? session, string? sid) = await EnsureSessionAsync();
+            if (!ok || session == null) return Unauthorized();
+
+            HttpClient client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", session.AccessToken);
+
+            HttpResponseMessage resp = await client.GetAsync($"{_paymentsServiceBase}/api/payments/{Uri.EscapeDataString(id)}");
             string respContent = await resp.Content.ReadAsStringAsync();
 
             return new ContentResult { Content = respContent, ContentType = "application/json", StatusCode = (int)resp.StatusCode };

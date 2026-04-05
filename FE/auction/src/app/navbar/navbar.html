@@ -1,7 +1,5 @@
 <header class="topbar">
-  <div class="brand">
-    <div class="logo">LOGO</div>
-  </div>
+  <div class="spacer"></div>
 
   <nav class="nav">
     <a class="link" routerLink="/my-bids" routerLinkActive="active">My Bids</a>
@@ -21,7 +19,7 @@
       {{ themeService.isDarkMode() ? '☀️' : '🌙' }}
     </button>
     <div class="store">
-      <div class="store-name">{{ storeName }}</div>
+      <div class="store-name">{{ username }}</div>
     </div>
   </div>
 </header>

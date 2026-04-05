@@ -1,4 +1,8 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ServicesHoster.Services
 {
@@ -9,8 +13,8 @@ namespace ServicesHoster.Services
             new ProductDto
             {
                 Id = "p-1000",
-                Name = "Egy Adag szar",
-                Description = "Rare vintage camera from the 1960s in excellent condition",
+                Name = "Classic Film Camera",
+                Description = "A well-preserved 1960s film camera, great for collectors and photography enthusiasts.",
                 Category = "Electronics",
                 Status = ProductStatus.Active,
                 StartingPrice = 50,
@@ -18,21 +22,27 @@ namespace ServicesHoster.Services
                 AuctionStartTime = DateTime.UtcNow,
                 AuctionEndTime = DateTime.UtcNow.AddMinutes(1),
                 TotalBids = 3,
-                HighestBidderId = "user-123",
-                HighestBidderUsername = "collector_joe",
-                SellerId = "kicsi kuki",
-                SellerUsername = "fos",
+                HighestBidderId = "Boti Boti",
+                HighestBidderUsername = "Boti",
+                SellerId = "Beni Beni",
+                SellerUsername = "Beni",
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
                 UpdatedAt = DateTime.UtcNow.AddHours(-1),
                 IsCompleted = false,
                 TransactionStatus = null,
-                Feedback = null
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("Boti Boti", "Boti"),
+                    new ProductBidderDto("user-456", "collector_user-456"),
+                    new ProductBidderDto("user-123", "collector_user-123")
+                }
             },
             new ProductDto
             {
                 Id = "p-1001",
-                Name = "Vintage Camera",
-                Description = "Rare vintage camera from the 1960s in excellent condition",
+                Name = "Vintage Rangefinder",
+                Description = "Rare rangefinder camera from the 1960s in excellent cosmetic condition.",
                 Category = "Electronics",
                 Status = ProductStatus.Active,
                 StartingPrice = 50,
@@ -40,15 +50,15 @@ namespace ServicesHoster.Services
                 AuctionStartTime = DateTime.UtcNow,
                 AuctionEndTime = DateTime.UtcNow.AddMinutes(1),
                 TotalBids = 3,
-                HighestBidderId = "user-123",
-                HighestBidderUsername = "collector_joe",
-                Bidders =
-                [
-                    new ProductBidderDto("user-123", "collector_joe"),
-                    new ProductBidderDto("kicsi kuki", "fos")
-                ],
-                SellerId = "system",
-                SellerUsername = "admin",
+                HighestBidderId = "Beni Beni",
+                HighestBidderUsername = "Beni",
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("user-456", "collector_user-456"),
+                    new ProductBidderDto("Beni Beni", "Beni")
+                },
+                SellerId = "Boti Boti",
+                SellerUsername = "Boti",
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
                 UpdatedAt = DateTime.UtcNow.AddHours(-1),
                 IsCompleted = false,
@@ -58,8 +68,8 @@ namespace ServicesHoster.Services
             new ProductDto
             {
                 Id = "p-1002",
-                Name = "Antique Watch",
-                Description = "Swiss made pocket watch, gold plated",
+                Name = "Antique Pocket Watch",
+                Description = "Swiss-made pocket watch with gold plating and intricate movement.",
                 Category = "Jewelry",
                 Status = ProductStatus.Expired,
                 StartingPrice = 200,
@@ -69,13 +79,13 @@ namespace ServicesHoster.Services
                 TotalBids = 7,
                 HighestBidderId = "user-123",
                 HighestBidderUsername = "collector_joe",
-                Bidders =
-                [
+                Bidders = new List<ProductBidderDto>
+                {
                     new ProductBidderDto("user-123", "collector_joe"),
-                    new ProductBidderDto("kicsi kuki", "fos")
-                ],
-                SellerId = "system",
-                SellerUsername = "admin",
+                    new ProductBidderDto("bob", "Bob K.")
+                },
+                SellerId = "Beni Beni",
+                SellerUsername = "Beni",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 UpdatedAt = DateTime.UtcNow.AddMinutes(-30),
                 IsCompleted = false,
@@ -86,7 +96,7 @@ namespace ServicesHoster.Services
             {
                 Id = "p-1003",
                 Name = "Leather Handbag",
-                Description = "Designer leather handbag, limited edition",
+                Description = "Designer leather handbag, limited edition. Excellent craftsmanship.",
                 Category = "Fashion",
                 Status = ProductStatus.Active,
                 StartingPrice = 100,
@@ -96,19 +106,20 @@ namespace ServicesHoster.Services
                 TotalBids = 5,
                 HighestBidderId = "user-789",
                 HighestBidderUsername = "fashionista",
-                SellerId = "system",
-                SellerUsername = "admin",
+                SellerId = "Boti Boti",
+                SellerUsername = "Boti",
                 CreatedAt = DateTime.UtcNow.AddHours(-12),
                 UpdatedAt = DateTime.UtcNow.AddMinutes(-15),
                 IsCompleted = false,
                 TransactionStatus = null,
-                Feedback = null
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>()
             },
             new ProductDto
             {
                 Id = "p-1004",
-                Name = "Vintage Vinyl Records",
-                Description = "Collection of 20 vinyl records from the 70s",
+                Name = "Vintage Vinyl Collection",
+                Description = "Curated set of 20 vinyl records from the 1970s in good condition.",
                 Category = "Music",
                 Status = ProductStatus.Sold,
                 StartingPrice = 30,
@@ -118,40 +129,45 @@ namespace ServicesHoster.Services
                 TotalBids = 12,
                 HighestBidderId = "user-321",
                 HighestBidderUsername = "music_lover",
-                SellerId = "system",
-                SellerUsername = "admin",
+                SellerId = "Barki",
+                SellerUsername = "Barki",
                 CreatedAt = DateTime.UtcNow.AddDays(-10),
                 UpdatedAt = DateTime.UtcNow.AddDays(-3),
                 IsCompleted = true,
-                TransactionStatus = TransactionStatus.Completed
+                TransactionStatus = TransactionStatus.Completed,
+                Bidders = new List<ProductBidderDto>()
             },
             new ProductDto
             {
                 Id = "p-1005",
-                Name = "Gaming Console",
-                Description = "Latest generation gaming console, barely used",
+                Name = "Gaming Console (Like New)",
+                Description = "Latest generation gaming console, barely used, includes original box.",
                 Category = "Electronics",
                 Status = ProductStatus.Sold,
                 StartingPrice = 250,
                 CurrentBid = 250,
                 AuctionStartTime = DateTime.UtcNow.AddDays(-8),
                 AuctionEndTime = DateTime.UtcNow.AddDays(-1),
-                TotalBids = 0,
-                HighestBidderId = null,
-                HighestBidderUsername = null,
-                SellerId = "kicsi kuki",
-                SellerUsername = "fos",
+                TotalBids = 1,
+                HighestBidderId = "user-555",
+                HighestBidderUsername = "gamer_A",
+                SellerId = "charlie",
+                SellerUsername = "Charlie D.",
                 CreatedAt = DateTime.UtcNow.AddHours(-3),
                 UpdatedAt = DateTime.UtcNow,
                 IsCompleted = true,
                 TransactionStatus = TransactionStatus.Completed,
-                Feedback = new FeedbackDto(5, "Very smooth transaction, everything was exactly as described.")
+                Feedback = new FeedbackDto(5, "Great seller — item as described, fast shipping."),
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("user-555", "gamer_A")
+                }
             },
             new ProductDto
             {
                 Id = "p-1006",
-                Name = "Oil Painting",
-                Description = "Original oil painting by local artist",
+                Name = "Original Oil Painting",
+                Description = "Original oil painting by a local artist — signed and framed.",
                 Category = "Art",
                 Status = ProductStatus.Expired,
                 StartingPrice = 500,
@@ -159,15 +175,15 @@ namespace ServicesHoster.Services
                 AuctionStartTime = DateTime.UtcNow.AddDays(-7),
                 AuctionEndTime = DateTime.UtcNow.AddDays(-1),
                 TotalBids = 4,
-                HighestBidderId = "kicsi kuki",
-                HighestBidderUsername = "fos",
-                Bidders =
-                [
-                    new ProductBidderDto("kicsi kuki", "fos"),
+                HighestBidderId = "bob",
+                HighestBidderUsername = "Bob K.",
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("bob", "Bob K."),
                     new ProductBidderDto("user-654", "art_fan")
-                ],
-                SellerId = "system",
-                SellerUsername = "admin",
+                },
+                SellerId = "Felhasznalo",
+                SellerUsername = "Felhasznalo",
                 CreatedAt = DateTime.UtcNow.AddDays(-7),
                 UpdatedAt = DateTime.UtcNow.AddDays(-1),
                 IsCompleted = false,
@@ -177,8 +193,8 @@ namespace ServicesHoster.Services
             new ProductDto
             {
                 Id = "p-1007",
-                Name = "Mountain Bike",
-                Description = "Professional mountain bike with full suspension",
+                Name = "Full-Suspension Mountain Bike",
+                Description = "High-performance mountain bike with full suspension, excellent for trails.",
                 Category = "Sports",
                 Status = ProductStatus.Active,
                 StartingPrice = 300,
@@ -194,13 +210,14 @@ namespace ServicesHoster.Services
                 UpdatedAt = DateTime.UtcNow.AddMinutes(-45),
                 IsCompleted = false,
                 TransactionStatus = null,
-                Feedback = null
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>()
             },
             new ProductDto
             {
                 Id = "p-1008",
-                Name = "Wireless Headphones",
-                Description = "Noise-cancelling wireless headphones in excellent condition",
+                Name = "Wireless Noise-Cancelling Headphones",
+                Description = "Comfortable, long battery life, and excellent noise cancellation.",
                 Category = "Electronics",
                 Status = ProductStatus.Draft,
                 StartingPrice = 180,
@@ -210,13 +227,14 @@ namespace ServicesHoster.Services
                 TotalBids = 0,
                 HighestBidderId = null,
                 HighestBidderUsername = null,
-                SellerId = "kicsi kuki",
-                SellerUsername = "fos",
+                SellerId = "dana",
+                SellerUsername = "Dana S.",
                 CreatedAt = DateTime.UtcNow.AddHours(-2),
                 UpdatedAt = DateTime.UtcNow.AddHours(-1),
                 IsCompleted = false,
                 TransactionStatus = null,
-                Feedback = null
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>()
             }
         });
 
@@ -234,6 +252,7 @@ namespace ServicesHoster.Services
                     product.UpdatedAt = now;
                 }
             }
+
             return Task.CompletedTask;
         }
 
@@ -249,6 +268,7 @@ namespace ServicesHoster.Services
         public Task AddRangeAsync(IEnumerable<ProductDto> products, string userName, string userPreferedName)
         {
             DateTime now = DateTime.UtcNow;
+
             foreach (ProductDto product in products)
             {
                 ProductDto productWithUser = new()
@@ -265,7 +285,7 @@ namespace ServicesHoster.Services
                     TotalBids = 0,
                     HighestBidderId = null,
                     HighestBidderUsername = null,
-                    Bidders = [],
+                    Bidders = new List<ProductBidderDto>(),
                     SellerId = userName,
                     SellerUsername = userPreferedName,
                     CreatedAt = now,
@@ -274,8 +294,10 @@ namespace ServicesHoster.Services
                     TransactionStatus = null,
                     Feedback = null
                 };
+
                 Products.Add(productWithUser);
             }
+
             return Task.CompletedTask;
         }
 

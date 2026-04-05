@@ -15,7 +15,7 @@ export class Navbar {
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
 
-  storeName: string | null = null;
+  username: string | null = null;
 
   readonly isAdminDomain = window.location.hostname === 'admin.auction.local' && window.location.port === '9443';
 
@@ -23,7 +23,9 @@ export class Navbar {
     this.authService.preferredName$
     .subscribe(name => {
       console.log('Preferred name updated:', name);
-      this.storeName = name;
+      this.username = name
+        ? name.charAt(0).toUpperCase() + name.slice(1)
+        : null;
     });
   }
 

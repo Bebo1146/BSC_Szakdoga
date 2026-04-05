@@ -1,17 +1,5 @@
 ﻿services:
   # ─── Infrastructure ───
-  postgres:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: keycloakpass
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
-    networks:
-      - app-network
-
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     command:
@@ -23,11 +11,6 @@
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_DB: postgres
-      KC_DB_URL_HOST: postgres
-      KC_DB_URL_DATABASE: keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloakpass
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_URL: http://localhost:8080
       KC_HOSTNAME_ADMIN_URL: http://localhost:8080
@@ -36,8 +19,6 @@
     volumes:
       - ./themes:/opt/keycloak/themes
       - ./realm-export/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
-    depends_on:
-      - postgres
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;"]
       interval: 30s
@@ -60,8 +41,7 @@
       - Auth__Authority=http://keycloak:8080/realms/dev-realm
       - Auth__ValidIssuer=http://localhost:8080/realms/dev-realm
       - Auth__RequireHttpsMetadata=false
-      - Storage__Type=Postgres
-      - ConnectionStrings__AuctionDb=Host=postgres;Port=5432;Database=auctiondb;Username=keycloak;Password=keycloakpass
+      - Storage__Type=InMemory
     depends_on:
       keycloak:
         condition: service_healthy
@@ -85,6 +65,7 @@
       - OAuth__RedirectUri=https://localhost:4443/api/auth/callback
       - OAuth__PostLogoutRedirectUri=https://localhost:4443
       - Services__ProductsApiBase=http://services-hoster:8080/api/products
+      - Services__PaymentsApiBase=http://payments:8080
       - Services__AuctionHubUrl=http://services-hoster:8080/hubs/auction
       - Cors__AllowedOrigins__0=https://localhost:4443
       - Cors__AllowedOrigins__1=http://localhost:4200
@@ -92,6 +73,8 @@
       keycloak:
         condition: service_healthy
       services-hoster:
+        condition: service_started
+      payments:
         condition: service_started
     networks:
       - app-network
@@ -106,6 +89,12 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - Auth__Authority=http://keycloak:8080/realms/dev-realm
+      - Auth__ValidIssuer=http://localhost:8080/realms/dev-realm
+      - Auth__RequireHttpsMetadata=false
+    depends_on:
+      keycloak:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -123,9 +112,6 @@
       - payments
     networks:
       - app-network
-
-volumes:
-  pgdata:
 
 networks:
   app-network:
