@@ -13,21 +13,6 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
 
-// Add CORS policy
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.WithOrigins(
-                "http://localhost:4200",
-                "https://localhost:4443",
-                "http://localhost:5215", "https://localhost:7037")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
-});
-
 builder.Services.AddSignalR();
 
 // Register Product Service based on configuration
@@ -61,11 +46,6 @@ if (storageType.Equals("postgres", StringComparison.OrdinalIgnoreCase))
     AuctionDbContext db = scope.ServiceProvider.GetRequiredService<AuctionDbContext>();
     await db.Database.EnsureCreatedAsync();
 }
-
-app.UseHttpsRedirection();
-
-// Enable CORS - MUST be before authentication/authorization
-app.UseCors("AllowAll");
 
 // Add authentication middleware (must be before authorization)
 app.UseAuthentication();

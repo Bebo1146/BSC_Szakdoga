@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using ServicesHoster.Services;
 using TokenValidation.TokenValidation;
@@ -9,7 +8,6 @@ namespace ServicesHoster.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    [EnableCors("AllowAll")]
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;

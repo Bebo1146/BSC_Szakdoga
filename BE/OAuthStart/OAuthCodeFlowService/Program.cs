@@ -37,7 +37,13 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
-                builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:4200" })
+                builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? new[]
+                {
+                    "https://auction.local:9443",
+                    "https://admin.auction.local:9443",
+                    "https://localhost:4443"
+                })
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
