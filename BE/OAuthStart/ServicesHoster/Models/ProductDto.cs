@@ -87,7 +87,6 @@ namespace ServicesHoster.Services
         Shipped,        // Item shipped to buyer
         Delivered,      // Item delivered
         Completed,      // Transaction fully completed
-        Disputed,       // Issue raised by buyer/seller
         Cancelled       // Transaction cancelled
     }
 

@@ -53,7 +53,6 @@ namespace OAuthCodeFlowService.Controllers
             string codeChallenge = _pkceService.GenerateCodeChallenge(codeVerifier);
             string state = _pkceService.GenerateState();
 
-            // Force using backend redirect URI (registered in Keycloak)
             string redirectUri = _settings.RedirectUri;
             string scope = request?.Scope ?? _settings.Scope;
 
@@ -80,7 +79,6 @@ namespace OAuthCodeFlowService.Controllers
 
             string authUrl = $"{authEndpoint}?{queryParams}";
 
-            // Helpful debug logs
             _logger.LogInformation("Authorize called; state={State}, redirect_uri={RedirectUri}", state[..10], redirectUri);
             _logger.LogInformation("Authorization URL: {AuthUrl}", authUrl);
 
@@ -126,7 +124,6 @@ namespace OAuthCodeFlowService.Controllers
 
                 _logger.LogInformation("Successfully exchanged code for tokens for state {State}", request.State);
 
-                // derive preferred name from id_token (preferred) or access_token
                 string? preferredName = JwtClaimReader.GetPreferredNameFromJwt(tokenResponse);
                 string? userid = JwtClaimReader.GetNameFromJwt(tokenResponse);
 
@@ -141,7 +138,6 @@ namespace OAuthCodeFlowService.Controllers
 
                 string sessionId = _sessionRepository.Create(sessionInfo);
 
-                // Use helper that sets Domain when configured
                 Response.Cookies.Append(SessionCookieName, sessionId, BuildSessionCookieOptions(sessionInfo.ExpiresAt));
 
                 _logger.LogInformation("Session created: {SessionId} (expires {Expires}) pref={Preferred}", sessionId, sessionInfo.ExpiresAt, preferredName);
@@ -210,7 +206,6 @@ namespace OAuthCodeFlowService.Controllers
                 string? preferredName = JwtClaimReader.GetPreferredNameFromJwt(tokenResponse);
                 string? userid = JwtClaimReader.GetNameFromJwt(tokenResponse);
 
-                // create server-side session and set secure cookie
                 DateTimeOffset expiresAt = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn > 0 ? tokenResponse.ExpiresIn : 3600);
                 SessionInfo sessionInfo = new SessionInfo(
                     tokenResponse.AccessToken,
@@ -225,7 +220,6 @@ namespace OAuthCodeFlowService.Controllers
 
                 _logger.LogInformation("Session created: {SessionId} (expires {Expires}) pref={Preferred}", sessionId, sessionInfo.ExpiresAt, preferredName);
 
-                // Redirect to frontend without tokens in the URL
                 if (!string.IsNullOrEmpty(authState.OriginalRedirectUri))
                 {
                     _logger.LogInformation("Redirecting to original frontend URI: {Original}", authState.OriginalRedirectUri);
@@ -247,7 +241,6 @@ namespace OAuthCodeFlowService.Controllers
         [HttpGet("me")]
         public ActionResult<object> Me()
         {
-            // Debug: log whether cookie arrived
             if (Request.Cookies.TryGetValue(SessionCookieName, out string? sessionId))
             {
                 _logger.LogInformation("Me called. session_id cookie present: {SessionIdPreview}", sessionId is null ? "null" : (sessionId.Length > 8 ? sessionId[..8] : sessionId));
@@ -333,9 +326,6 @@ namespace OAuthCodeFlowService.Controllers
         /// </summary>
         private CookieOptions BuildSessionCookieOptions(DateTimeOffset expiresAt)
         {
-            // If a CookieDomain is configured we need to make the cookie usable across subdomains:
-            //  - set Domain to the configured value (leading dot: ".auction.local")
-            //  - set SameSite=None and Secure=true so browsers will send the cookie cross-site over HTTPS
             CookieOptions options = new CookieOptions
             {
                 HttpOnly = true,
@@ -345,13 +335,12 @@ namespace OAuthCodeFlowService.Controllers
 
             if (!string.IsNullOrEmpty(_settings.CookieDomain))
             {
-                options.Domain = _settings.CookieDomain; // ".auction.local"
+                options.Domain = _settings.CookieDomain;
                 options.SameSite = SameSiteMode.None;
-                options.Secure = true; // required for SameSite=None
+                options.Secure = true;
             }
             else
             {
-                // local/dev fallback: preserve previous behavior based on Request.IsHttps
                 options.Secure = Request.IsHttps;
                 options.SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax;
             }
