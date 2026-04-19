@@ -12,13 +12,13 @@
         <th>CURRENT PRICE</th>
         <th>BIDS</th>
         <th>TIME LEFT</th>
-        <th>SELLER</th>
-        <th>BID</th>
+        <th *ngIf="showSeller">SELLER</th>
+        <th *ngIf="showBid || showDeleteButton" class="col-actions">BID</th>
       </tr>
     </thead>
 
     <tbody>
-      <tr *ngFor="let p of products" (click)="productClick.emit(p)">
+      <tr *ngFor="let p of products; trackBy: trackById" (click)="productClick.emit(p)">
 
         <td class="name">
           <div>{{ p.name }}</div>
@@ -66,9 +66,9 @@
           </span>
         </td>
 
-        <td class="muted">{{ p.sellerUsername }}</td>
+        <td class="muted" *ngIf="showSeller">{{ p.sellerUsername }}</td>
 
-        <td>
+        <td *ngIf="showBid || showDeleteButton" class="col-actions">
           <!-- Admin actions -->
           <ng-container *ngIf="showDeleteButton; else bidBlock">
             <div class="admin-actions">

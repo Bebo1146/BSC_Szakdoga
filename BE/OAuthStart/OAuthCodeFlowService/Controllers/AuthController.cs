@@ -43,9 +43,6 @@ namespace OAuthCodeFlowService.Controllers
             _sessionRepository = sessionRepository;
         }
 
-        /// <summary>
-        /// Initiates the OAuth authorization flow by generating an authorization URL
-        /// </summary>
         [HttpPost("authorize")]
         public async Task<ActionResult<AuthorizationUrlResponse>> Authorize([FromBody] AuthorizationRequest? request)
         {
@@ -89,10 +86,6 @@ namespace OAuthCodeFlowService.Controllers
             });
         }
 
-        /// <summary>
-        /// Handles the OAuth callback and exchanges the authorization code for tokens
-        /// Backend creates a server-side session and sets a secure, HttpOnly session cookie.
-        /// </summary>
         [HttpPost("callback")]
         public async Task<ActionResult> Callback([FromBody] CallbackRequest request)
         {
@@ -151,10 +144,6 @@ namespace OAuthCodeFlowService.Controllers
             }
         }
 
-        /// <summary>
-        /// Handles the OAuth callback via GET (browser redirect)
-        /// Backend will create session cookie and then redirect to original frontend URL without tokens in the URL.
-        /// </summary>
         [HttpGet("callback")]
         public async Task<IActionResult> CallbackGet(
             [FromQuery] string? code,
@@ -235,9 +224,6 @@ namespace OAuthCodeFlowService.Controllers
             }
         }
 
-        /// <summary>
-        /// Returns basic session information for the frontend. Backend will use stored tokens for protected calls.
-        /// </summary>
         [HttpGet("me")]
         public ActionResult<object> Me()
         {
@@ -270,9 +256,6 @@ namespace OAuthCodeFlowService.Controllers
             });
         }
 
-        /// <summary>
-        /// Refreshes an access token using a refresh token (server-side).
-        /// </summary>
         [HttpPost("refresh")]
         public async Task<ActionResult<TokenResponse>> Refresh([FromBody] RefreshRequest request)
         {
@@ -288,9 +271,6 @@ namespace OAuthCodeFlowService.Controllers
             }
         }
 
-        /// <summary>
-        /// Returns the logout URL for ending the session
-        /// </summary>
         [HttpGet("logout-url")]
         public async Task<ActionResult> GetLogoutUrl([FromQuery] string? idTokenHint)
         {
@@ -314,16 +294,68 @@ namespace OAuthCodeFlowService.Controllers
             return Ok(new { logoutUrl });
         }
 
-        /// <summary>
-        /// Health check endpoint
-        /// </summary>
         [HttpGet("health")]
         public IActionResult Health() => Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
 
-        /// <summary>
-        /// Builds consistent cookie options for session cookies.
-        /// Sets Domain when CookieDomain is configured (to share across subdomains).
-        /// </summary>
+        [HttpGet("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            string? idTokenHint = null;
+
+            if (Request.Cookies.TryGetValue(SessionCookieName, out string? sessionId) && !string.IsNullOrEmpty(sessionId))
+            {
+                SessionInfo? session = _sessionRepository.Get(sessionId);
+                if (session != null)
+                {
+                    idTokenHint = session.IdToken;
+                }
+
+                _sessionRepository.Remove(sessionId);
+                _logger.LogInformation("Session removed during logout: {SessionIdPreview}", sessionId.Length > 8 ? sessionId[..8] : sessionId);
+            }
+
+            CookieOptions cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                IsEssential = true
+            };
+
+            if (!string.IsNullOrEmpty(_settings.CookieDomain))
+            {
+                cookieOptions.Domain = _settings.CookieDomain;
+                cookieOptions.SameSite = SameSiteMode.None;
+                cookieOptions.Secure = true;
+            }
+            else
+            {
+                cookieOptions.Secure = Request.IsHttps;
+                cookieOptions.SameSite = Request.IsHttps ? SameSiteMode.None : SameSiteMode.Lax;
+            }
+
+            Response.Cookies.Delete(SessionCookieName, cookieOptions);
+
+            string endSessionEndpoint = await _tokenService.GetEndSessionEndpointAsync();
+            System.Collections.Specialized.NameValueCollection queryParams = System.Web.HttpUtility.ParseQueryString(string.Empty);
+
+            if (!string.IsNullOrEmpty(idTokenHint))
+            {
+                queryParams["id_token_hint"] = idTokenHint;
+            }
+
+            if (!string.IsNullOrEmpty(_settings.PostLogoutRedirectUri))
+            {
+                queryParams["post_logout_redirect_uri"] = _settings.PostLogoutRedirectUri;
+            }
+
+            string logoutUrl = queryParams.Count > 0
+                ? $"{endSessionEndpoint}?{queryParams}"
+                : endSessionEndpoint;
+
+            _logger.LogInformation("Redirecting to Keycloak logout: {LogoutUrl}", logoutUrl);
+
+            return Redirect(logoutUrl);
+        }
+
         private CookieOptions BuildSessionCookieOptions(DateTimeOffset expiresAt)
         {
             CookieOptions options = new CookieOptions

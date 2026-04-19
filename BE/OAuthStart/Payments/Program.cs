@@ -6,7 +6,6 @@ using TokenValidation.TokenValidation.ExtensionMethods;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// JWT validation — same pattern as ServicesHoster
 builder.Services.AddTokenValidation(builder.Configuration);
 
 var app = builder.Build();

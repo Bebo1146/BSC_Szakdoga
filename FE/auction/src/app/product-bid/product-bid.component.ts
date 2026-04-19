@@ -34,15 +34,20 @@ export class ProductBidComponent implements OnChanges {
     });
   }
 
+  private lastMin: number = 0;
+
   ngOnChanges(changes: SimpleChanges) {
     // compute the minimum allowed value:
     // ensure it's at least currentBid and at least highestBid + minIncrement
     const minFromHighest = (this.highestBid || 0) + (this.minIncrement || 1);
     const min = Math.max(this.currentBid || 0, minFromHighest);
 
-    // set validators once (required + min)
-    this.amountControl.setValidators([Validators.required, Validators.min(min)]);
-    this.amountControl.updateValueAndValidity();
+    // only update validators if the min actually changed
+    if (min !== this.lastMin) {
+      this.lastMin = min;
+      this.amountControl.setValidators([Validators.required, Validators.min(min)]);
+      this.amountControl.updateValueAndValidity();
+    }
   }
 
   get endsInPast(): boolean {

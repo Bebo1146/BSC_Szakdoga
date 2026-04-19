@@ -1,11 +1,12 @@
 <header class="topbar">
-  <div class="spacer"></div>
+  <div class="left-actions">
+    <a class="link logout-link" (click)="logout()" title="Logout">Logout</a>
+  </div>
 
   <nav class="nav">
     <a class="link" routerLink="/my-bids" routerLinkActive="active">My Bids</a>
     <a class="link" routerLink="/home" routerLinkActive="active">My Products</a>
     <a class="link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Products</a>
-    <!-- <a class="link" routerLink="/store-settings" routerLinkActive="active">Store setting</a> -->
     <a class="link" routerLink="/feedbacks" routerLinkActive="active">Reviews About Me</a>
     <a class="link admin-link" routerLink="/admin" routerLinkActive="active" *ngIf="isAdminDomain">Admin</a>
   </nav>
@@ -19,7 +20,7 @@
       {{ themeService.isDarkMode() ? '☀️' : '🌙' }}
     </button>
     <div class="store">
-      <div class="store-name">{{ username }}</div>
+      <div class="store-name">{{ isAdminDomain ? 'Admin' : username }}</div>
     </div>
   </div>
 </header>

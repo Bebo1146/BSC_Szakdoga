@@ -12,37 +12,28 @@ namespace TokenValidation.TokenValidation.ExtensionMethods
 {
     public static class ServiceCollectionExtensions
     {
-        /// <summary>
-        /// Adds JWT bearer token validation using OIDC metadata from Authority.
-        /// Reads config from section "Auth" by default.
-        /// </summary>
         public static IServiceCollection AddTokenValidation(
             this IServiceCollection services,
             IConfiguration configuration,
             string sectionName = "Auth")
         {
-            // Bind + validate your custom options
             services.AddOptions<TokenValidationOptions>()
                 .Bind(configuration.GetSection(sectionName))
                 .Validate(o => !string.IsNullOrWhiteSpace(o.Authority), $"{sectionName}:Authority is required")
-                // Audience is now optional for testing
                 .ValidateOnStart();
 
             TokenValidationOptions? authOptions = configuration.GetSection(sectionName).Get<TokenValidationOptions>();
 
-            // Use ValidIssuer if set, otherwise fall back to Authority
             string effectiveIssuer = !string.IsNullOrWhiteSpace(authOptions.ValidIssuer)
                 ? authOptions.ValidIssuer
                 : authOptions.Authority;
 
-            // Register authentication scheme with direct configuration
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>
                     {
                         options.Authority = authOptions.Authority;
                         options.RequireHttpsMetadata = authOptions.RequireHttpsMetadata;
 
-                        // Only set audience if provided
                         if (!string.IsNullOrWhiteSpace(authOptions.Audience))
                         {
                             options.Audience = authOptions.Audience;
@@ -58,7 +49,6 @@ namespace TokenValidation.TokenValidation.ExtensionMethods
                             ClockSkew = TimeSpan.FromSeconds(authOptions.ClockSkewSeconds),
                         };
 
-                        // Add detailed event handlers for debugging
                         options.Events = new JwtBearerEvents
                         {
                             OnAuthenticationFailed = context =>
@@ -109,19 +99,14 @@ namespace TokenValidation.TokenValidation.ExtensionMethods
                         };
                     });
 
-            // Add authorization + optional scope policies
             services.AddAuthorization();
             services.AddTokenValidationPolicies();
 
             return services;
         }
 
-        /// <summary>
-        /// Adds authorization policies based on TokenValidationOptions.RequiredScopes.
-        /// </summary>
         public static IServiceCollection AddTokenValidationPolicies(this IServiceCollection services)
         {
-            // Build policy using configured options (captured values)
             services.AddOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions>()
                 .Configure<IOptions<TokenValidationOptions>>((options, tvOpts) =>
                 {
@@ -131,7 +116,6 @@ namespace TokenValidation.TokenValidation.ExtensionMethods
                     {
                         policy.RequireAuthenticatedUser();
 
-                        // If no required scopes configured, just require authentication
                         if (opt.RequiredScopes is null || opt.RequiredScopes.Length == 0)
                             return;
 
@@ -144,7 +128,6 @@ namespace TokenValidation.TokenValidation.ExtensionMethods
 
                             string[] scopeSet = scopes.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-                            // Requires ALL configured scopes. If you want "any", change All -> Any.
                             return opt.RequiredScopes.All(required => scopeSet.Contains(required));
                         });
                     });

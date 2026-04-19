@@ -52,7 +52,6 @@ export class HomeComponent implements OnDestroy {
     category: '',
     status: ProductStatus.Draft,
     startingPrice: 0,
-    reservePrice: null,
     auctionStartTime: '',
     auctionEndTime: '',
   });
@@ -156,8 +155,6 @@ export class HomeComponent implements OnDestroy {
   saveProduct(): void {
     const product = this.newProduct();
 
-    console.log('Saving product:', product);
-
     if (!product.name.trim() || !product.category.trim()) {
       alert('Name and Category are required.');
       return;
@@ -187,7 +184,24 @@ export class HomeComponent implements OnDestroy {
     this.selectedIds.set(newSet);
   }
 
+  onBidUpdated(updated: Product): void {
+    this.products.update(current =>
+      current.map(p => p.id === updated.id ? { ...updated, timeRemainingSeconds: p.timeRemainingSeconds } : p)
+    );
+  }
+
   onAddProduct(): void {
+    const now = new Date();
+    const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    this.newProduct.set({
+      name: '',
+      description: '',
+      category: '',
+      status: ProductStatus.Draft,
+      startingPrice: 0,
+      auctionStartTime: now.toISOString().slice(0, 16),
+      auctionEndTime: weekLater.toISOString().slice(0, 16),
+    });
     this.showAddModal.set(true);
   }
 

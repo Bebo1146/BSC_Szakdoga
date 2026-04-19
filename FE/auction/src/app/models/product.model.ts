@@ -32,7 +32,6 @@ export interface Product {
   status: ProductStatus;
   startingPrice: number;
   currentBid: number | null;
-  reservePrice: number | null;
   auctionStartTime: string;
   auctionEndTime: string;
   totalBids: number;
@@ -57,7 +56,6 @@ export interface NewProduct {
   category: string;
   status: ProductStatus;
   startingPrice: number;
-  reservePrice: number | null;
   auctionStartTime: string;
   auctionEndTime: string;
 }

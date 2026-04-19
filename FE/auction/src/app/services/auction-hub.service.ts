@@ -32,7 +32,7 @@ export class AuctionSignalService implements OnDestroy {
     });
 
     this.hubConnection.start()
-      .then(() => console.log('SignalR connected'))
+      .then()
       .catch(err => console.error('SignalR error:', err));
   }
     

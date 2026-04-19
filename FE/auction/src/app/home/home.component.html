@@ -22,7 +22,10 @@
       [selectedIds]="selectedIds()"
       [loading]="loading()"
       [error]="error()"
+      [showBid]="false"
+      [showSeller]="false"
       (selectionChange)="onSelectionChange($event)"
+      (bidUpdated)="onBidUpdated($event)"
     ></app-product-table>
   </main>
 </div>

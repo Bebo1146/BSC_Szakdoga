@@ -49,9 +49,7 @@ export class MyBidsComponent implements OnInit, OnDestroy {
 
     // hide sold items where feedback has already been given
     rows = rows.filter((p: any) => {
-      console.log(p.status);
-
-      if (p.status === ProductStatus.Sold && this.feedbackService.hasFeedbackBeenGiven(p.id)) {
+      if (p.status === ProductStatus.Sold && p.feedback !== null && p.feedback !== undefined) {
         return false;
       }
       
@@ -187,6 +185,12 @@ export class MyBidsComponent implements OnInit, OnDestroy {
 
   onSelectionChange(newSet: Set<string>): void {
     this.selectedIds.set(newSet);
+  }
+
+  onBidUpdated(updated: Product): void {
+    this.products.update(current =>
+      current.map(p => p.id === updated.id ? { ...updated, timeRemainingSeconds: p.timeRemainingSeconds } : p)
+    );
   }
 
   onProductClick(p: Product): void {

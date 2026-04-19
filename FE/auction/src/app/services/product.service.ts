@@ -68,7 +68,7 @@ export class ProductService {
       requests,
       { ...this.defaultOptions }
     ).pipe(
-      tap(res => console.log('markAsRejected response:', res))
+      tap()
     );
   }
 
@@ -78,7 +78,7 @@ export class ProductService {
       productIds,
       { ...this.defaultOptions }
     ).pipe(
-      tap(res => console.log('markAsAccepted response:', res))
+      tap()
     );
   }
 }

@@ -52,7 +52,7 @@ export class FeedbackService {
       `${this.apiUrl}/products/my-received-feedback`,
       { withCredentials: true }
     ).pipe(
-      tap((data) => console.log('[FeedbackService] getMyFeedbacks response:', data))
+      tap()
     );
   }
 }

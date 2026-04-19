@@ -13,22 +13,19 @@ namespace OAuthStart
             DiscoveryClient discoveryClient = new DiscoveryClient(devRealmIssuer);
             OpenIdConnectConfiguration discoveryDocument = await discoveryClient.GetDiscoveryDocumentAsync();
 
-            // Configure the Authorization Code Flow service
             AuthorizationCodeFlowService authService = new AuthorizationCodeFlowService(
                 authorizationEndpoint: new Uri(discoveryDocument.AuthorizationEndpoint),
                 tokenEndpoint: new Uri(discoveryDocument.TokenEndpoint),
                 clientId: "my-backend-client6",
                 redirectUri: "http://localhost:5000/callback",
                 scope: "openid profile email",
-                clientSecret: "your-client-secret" // Optional for confidential clients
+                clientSecret: "your-client-secret"
             );
 
-            // Build the authorization URL and open it in the browser
             string authUrl = authService.BuildAuthorizationUrl();
             Console.WriteLine($"Opening browser for authorization: {authUrl}");
             Process.Start(new ProcessStartInfo(authUrl) { UseShellExecute = true });
 
-            // Start listening for the callback
             using (OAuthCallbackHandler callbackHandler = new OAuthCallbackHandler(authService, "http://localhost:5000/"))
             {
                 using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromMinutes(5)))

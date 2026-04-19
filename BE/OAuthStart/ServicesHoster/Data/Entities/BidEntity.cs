@@ -9,8 +9,6 @@ namespace ServicesHoster.Data.Entities
         public int Amount { get; set; }
         public DateTime BidTime { get; set; }
         public bool IsWinningBid { get; set; }
-
-        // Navigation
         public ProductEntity Product { get; set; } = null!;
     }
 }

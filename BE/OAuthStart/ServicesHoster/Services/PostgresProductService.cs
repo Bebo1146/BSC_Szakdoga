@@ -108,7 +108,6 @@ namespace ServicesHoster.Services
             if (amount <= currentThreshold)
                 return (false, $"Bid must be greater than current bid ({currentThreshold:C})", null);
 
-            // Un-mark previous winning bid
             BidEntity? previousWinner = await db.Bids
                 .Where(b => b.ProductId == productId && b.IsWinningBid)
                 .FirstOrDefaultAsync();

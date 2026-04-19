@@ -36,11 +36,8 @@ namespace OAuthCodeFlowService.Services
                 if (_discoveryDocument != null)
                     return _discoveryDocument;
 
-                // Use the internal issuer for server-to-server discovery
                 string internalIssuer = _settings.EffectiveInternalIssuer;
 
-                // Allow HTTP for discovery in development only.
-                // In production you MUST use HTTPS and keep RequireHttps = true.
                 HttpDocumentRetriever httpDocRetriever = new HttpDocumentRetriever(_httpClient)
                 {
                     RequireHttps = false
@@ -66,25 +63,17 @@ namespace OAuthCodeFlowService.Services
             }
         }
 
-        /// <summary>
-        /// Returns the token endpoint using the internal Keycloak URL (for server-to-server calls).
-        /// </summary>
         public async Task<string> GetTokenEndpointAsync()
         {
             OpenIdConnectConfiguration doc = await GetDiscoveryDocumentAsync();
             return doc.TokenEndpoint;
         }
 
-        /// <summary>
-        /// Returns the authorization endpoint using the public Issuer URL (for browser redirects).
-        /// </summary>
         public async Task<string> GetAuthorizationEndpointAsync()
         {
             OpenIdConnectConfiguration doc = await GetDiscoveryDocumentAsync();
             string endpoint = doc.AuthorizationEndpoint;
 
-            // If using an internal issuer, replace the internal host with the public issuer
-            // so the browser can reach Keycloak
             if (!string.IsNullOrEmpty(_settings.InternalIssuer) &&
                 endpoint.StartsWith(_settings.InternalIssuer.TrimEnd('/')))
             {
@@ -95,15 +84,11 @@ namespace OAuthCodeFlowService.Services
             return endpoint;
         }
 
-        /// <summary>
-        /// Returns the end-session endpoint using the public Issuer URL (for browser redirects).
-        /// </summary>
         public async Task<string> GetEndSessionEndpointAsync()
         {
             OpenIdConnectConfiguration doc = await GetDiscoveryDocumentAsync();
             string endpoint = doc.EndSessionEndpoint;
 
-            // Replace internal host with public issuer for browser access
             if (!string.IsNullOrEmpty(_settings.InternalIssuer) &&
                 endpoint.StartsWith(_settings.InternalIssuer.TrimEnd('/')))
             {

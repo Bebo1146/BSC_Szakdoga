@@ -7,6 +7,7 @@ import { ProductTableComponent } from '../product-table/product-table.component'
 import { ProductFormModalComponent } from '../product-form-modal/product-form-modal.component';
 import { ProductToolbarComponent } from '../product-toolbar/product-toolbar.component';
 import { ProductService } from '../services/product.service';
+import { AuthService } from '../services/auth.service';
 import { AuctionSignalService, AuctionTimeUpdate } from '../services/auction-hub.service';
 import { Subscription } from 'rxjs';
 import {
@@ -25,6 +26,7 @@ import {
 })
 export class ProductComponent implements OnDestroy {
   private readonly productService = inject(ProductService);
+  private readonly authService = inject(AuthService);
   private readonly auctionHub = inject(AuctionSignalService);
   private readonly router = inject(Router);
   private hubSubscription?: Subscription;
@@ -41,7 +43,6 @@ export class ProductComponent implements OnDestroy {
 
   products = signal<Product[]>([]);
 
-  // Add product modal state
   showAddModal = signal(false);
   saving = signal(false);
   newProduct = signal<NewProduct>({
@@ -50,7 +51,6 @@ export class ProductComponent implements OnDestroy {
     category: '',
     status: ProductStatus.Draft,
     startingPrice: 0,
-    reservePrice: null,
     auctionStartTime: '',
     auctionEndTime: '',
   });
@@ -65,7 +65,6 @@ export class ProductComponent implements OnDestroy {
 
     this.productService.getAllProducts().subscribe({
       next: (rows) => {
-        console.log('First product timeRemaining:', rows[0]?.timeRemaining, 'timeRemainingSeconds:', rows[0]?.timeRemainingSeconds);
         this.products.set((rows ?? []).map(p => ({
           ...p,
           timeRemainingSeconds: p.timeRemainingSeconds ?? this.parseTimeRemaining(p.timeRemaining),
@@ -88,19 +87,7 @@ export class ProductComponent implements OnDestroy {
 
   private connectToHub(): void {
     this.hubSubscription?.unsubscribe();
-
-    // MOCK: simulates 1 minute passing per second - remove when done testing
-    // this.mockTimerInterval = setInterval(() => {
-    //   this.products.update(current =>
-    //     current.map(p => ({
-    //       ...p,
-    //       timeRemainingSeconds: Math.max(0, (p.timeRemainingSeconds ?? 86400) - 60),
-    //     }))
-    //   );
-    // }, 1000);
-    // return;
-    // END MOCK
-
+    
     this.auctionHub.start();
     this.hubSubscription = this.auctionHub.updates$.subscribe((updates: AuctionTimeUpdate[]) => {
       this.products.update(current => {
@@ -143,7 +130,10 @@ export class ProductComponent implements OnDestroy {
 
   filtered = computed(() => {
     const q = this.query().trim().toLowerCase();
-    let rows = this.products().filter((r) => r.status === ProductStatus.Active);
+    const currentUserId = this.authService.getUserIdSync();
+    let rows = this.products().filter(
+      (r) => r.status === ProductStatus.Active && r.sellerId !== currentUserId
+    );
 
     if (q) {
       rows = rows.filter(
@@ -181,9 +171,13 @@ export class ProductComponent implements OnDestroy {
     this.selectedIds.set(newSet);
   }
 
-  onAddProduct(): void {
-    console.log('Add product clicked');
+  onBidUpdated(updated: Product): void {
+    this.products.update(current =>
+      current.map(p => p.id === updated.id ? { ...updated, timeRemainingSeconds: p.timeRemainingSeconds } : p)
+    );
+  }
 
+  onAddProduct(): void {
     const now = new Date();
     const weekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     this.newProduct.set({
@@ -192,7 +186,6 @@ export class ProductComponent implements OnDestroy {
       category: '',
       status: ProductStatus.Draft,
       startingPrice: 0,
-      reservePrice: null,
       auctionStartTime: now.toISOString().slice(0, 16),
       auctionEndTime: weekLater.toISOString().slice(0, 16),
     });
@@ -205,8 +198,6 @@ export class ProductComponent implements OnDestroy {
 
   saveProduct(): void {
     const product = this.newProduct();
-
-    console.log('Saving product:', product);
 
     if (!product.name.trim() || !product.category.trim()) {
       alert('Name and Category are required.');

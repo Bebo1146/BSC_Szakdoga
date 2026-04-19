@@ -15,11 +15,6 @@ namespace ServicesHoster.Services
         Task<(bool Success, string? Error, ProductDto? Product)> AddFeedbackAsync(string productId, FeedbackDto feedback);
         Task<IEnumerable<FeedbackItemDto>> GetFeedbackReceivedByUserAsync(string userId);
         Task<IEnumerable<ProductDto>> GetActiveProductsAsync();
-
-        /// <summary>
-        /// Proactively transitions any Active auctions past their end time to Expired.
-        /// Intended to be called on a background timer tick.
-        /// </summary>
         Task ExpireEndedAuctionsAsync();
     }
 }

@@ -5,11 +5,6 @@ using OAuthCodeFlowService.Services;
 
 namespace OAuthCodeFlowService.Hubs
 {
-    /// <summary>
-    /// Client-facing hub. Each Angular client connects with session cookie.
-    /// On connect: resolves token from session, opens per-client upstream connection to ServicesHoster.
-    /// Relays upstream messages back to that specific Angular client.
-    /// </summary>
     public class AuctionHub : Hub
     {
         private const string SessionCookieName = "session_id";
@@ -19,7 +14,6 @@ namespace OAuthCodeFlowService.Hubs
         private readonly IHubContext<AuctionHub> _hubContext;
         private readonly ILogger<AuctionHub> _logger;
 
-        // Track upstream connections per client
         private static readonly ConcurrentDictionary<string, HubConnection> _upstreamConnections = new();
 
         public AuctionHub(
@@ -56,17 +50,14 @@ namespace OAuthCodeFlowService.Hubs
             string connectionId = Context.ConnectionId;
             string accessToken = session.AccessToken;
 
-            // Create upstream connection using THIS client's token
             HubConnection upstream = new HubConnectionBuilder()
                 .WithUrl(_upstreamHubUrl, options =>
                 {
                     options.AccessTokenProvider = () =>
                     {
-                        // Re-read session on each reconnect to get refreshed token
                         SessionInfo? current = _sessions.Get(sessionId);
                         return Task.FromResult(current?.AccessToken);
                     };
-                    // Skip SSL validation for internal Docker communication
                     options.HttpMessageHandlerFactory = _ => new HttpClientHandler
                     {
                         ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -75,7 +66,6 @@ namespace OAuthCodeFlowService.Hubs
                 .WithAutomaticReconnect()
                 .Build();
 
-            // Relay upstream messages to THIS specific Angular client
             upstream.On<List<AuctionTimeUpdate>>("AuctionTimeUpdate", async updates =>
             {
                 await _hubContext.Clients.Client(connectionId).SendAsync("AuctionTimeUpdate", updates);

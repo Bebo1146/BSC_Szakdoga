@@ -37,7 +37,6 @@ namespace ServicesHoster.Controllers
             return Ok(products);
         }
 
-        // NEW: products the current user has placed bids on
         [HttpGet("my-bids")]
         public async Task<IActionResult> GetProductsIBidOn()
         {
@@ -87,12 +86,8 @@ namespace ServicesHoster.Controllers
             return product is null ? NotFound() : Ok(product);
         }
 
-        // Bid request DTO
         public record BidRequest(int Amount);
 
-        /// <summary>
-        /// Place a bid on a product.
-        /// </summary>
         [HttpPost("{id}/bid")]
         public async Task<IActionResult> PlaceBid(string id, [FromBody] BidRequest? request)
         {
@@ -120,7 +115,6 @@ namespace ServicesHoster.Controllers
                 return BadRequest(new { Message = "Bid failed", Reason = error });
             }
 
-            // Return the updated product and the created bid
             ProductDto? updatedProduct = await _productService.GetByIdAsync(id);
             return CreatedAtAction(nameof(GetById), new { id = id }, new { Product = updatedProduct, Bid = bid });
         }

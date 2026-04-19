@@ -5,8 +5,6 @@ using ServicesHoster.Services;
 using TokenValidation.TokenValidation.ExtensionMethods;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -14,8 +12,6 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddSignalR();
-
-// Register Product Service based on configuration
 string storageType = builder.Configuration.GetValue<string>("Storage:Type") ?? "InMemory";
 
 switch (storageType.ToLowerInvariant())
@@ -33,13 +29,10 @@ switch (storageType.ToLowerInvariant())
 }
 
 builder.Services.AddHostedService<AuctionTimerService>();
-
-// Add token validation (JWT Bearer authentication + authorization)
 builder.Services.AddTokenValidation(builder.Configuration);
 
 WebApplication app = builder.Build();
 
-// Auto-create database tables on startup (dev only)
 if (storageType.Equals("postgres", StringComparison.OrdinalIgnoreCase))
 {
     using IServiceScope scope = app.Services.CreateScope();
@@ -47,7 +40,6 @@ if (storageType.Equals("postgres", StringComparison.OrdinalIgnoreCase))
     await db.Database.EnsureCreatedAsync();
 }
 
-// Add authentication middleware (must be before authorization)
 app.UseAuthentication();
 app.UseAuthorization();
 

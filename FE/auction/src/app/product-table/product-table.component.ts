@@ -23,15 +23,22 @@ export class ProductTableComponent {
   @Input() error: string | null = null;
   @Input() showPay = false;       
   @Input() showFeedback = false;
-  @Input() showDeleteButton = false; // ← changed from signal input() to @Input()
+  @Input() showBid = true;
+  @Input() showSeller = true;
+  @Input() showDeleteButton = false;
 
   @Output() selectionChange = new EventEmitter<Set<string>>();
   @Output() productClick = new EventEmitter<Product>();
   @Output() feedbackClick = new EventEmitter<Product>();
   @Output() deleteClick = new EventEmitter<Product>();
   @Output() acceptClick = new EventEmitter<Product>();
+  @Output() bidUpdated = new EventEmitter<Product>();
 
   readonly ProductStatus = ProductStatus;
+
+  trackById(_index: number, item: Product): string {
+    return item.id;
+  }
 
   private readonly bidService = inject(BidService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -98,17 +105,16 @@ export class ProductTableComponent {
 
       const updated = await firstValueFrom(this.bidService.getProductById(event.productId));
 
+      this.bidUpdated.emit(updated);
+
       this.products = this.products.map(p => (p.id === updated.id ? updated : p));
 
       this.cdr.detectChanges();
     } catch (err) {
-      // handle/log error as appropriate
       console.error('Failed to place bid / refresh product:', err);
     }
   }
 
-  // Navigate to payments with the product id as bidId.
-  // Stops propagation so the row click handler won't run.
   onPay(event: Event, product: any) {
     event.stopPropagation();
     const bidId = product?.id;

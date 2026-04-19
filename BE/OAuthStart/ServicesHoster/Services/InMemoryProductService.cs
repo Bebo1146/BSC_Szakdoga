@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -121,20 +121,21 @@ namespace ServicesHoster.Services
                 Name = "Vintage Vinyl Collection",
                 Description = "Curated set of 20 vinyl records from the 1970s in good condition.",
                 Category = "Music",
-                Status = ProductStatus.Sold,
+                Status = ProductStatus.Active,
                 StartingPrice = 30,
                 CurrentBid = 120,
-                AuctionStartTime = DateTime.UtcNow.AddDays(-10),
-                AuctionEndTime = DateTime.UtcNow.AddDays(-3),
+                AuctionStartTime = DateTime.UtcNow.AddDays(-1),
+                AuctionEndTime = DateTime.UtcNow.AddDays(3),
                 TotalBids = 12,
                 HighestBidderId = "user-321",
                 HighestBidderUsername = "music_lover",
                 SellerId = "Barki",
                 SellerUsername = "Barki",
-                CreatedAt = DateTime.UtcNow.AddDays(-10),
-                UpdatedAt = DateTime.UtcNow.AddDays(-3),
-                IsCompleted = true,
-                TransactionStatus = TransactionStatus.Completed,
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+                UpdatedAt = DateTime.UtcNow.AddMinutes(-20),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null,
                 Bidders = new List<ProductBidderDto>()
             },
             new ProductDto
@@ -143,11 +144,11 @@ namespace ServicesHoster.Services
                 Name = "Gaming Console (Like New)",
                 Description = "Latest generation gaming console, barely used, includes original box.",
                 Category = "Electronics",
-                Status = ProductStatus.Sold,
+                Status = ProductStatus.Active,
                 StartingPrice = 250,
                 CurrentBid = 250,
-                AuctionStartTime = DateTime.UtcNow.AddDays(-8),
-                AuctionEndTime = DateTime.UtcNow.AddDays(-1),
+                AuctionStartTime = DateTime.UtcNow.AddHours(-3),
+                AuctionEndTime = DateTime.UtcNow.AddDays(2),
                 TotalBids = 1,
                 HighestBidderId = "user-555",
                 HighestBidderUsername = "gamer_A",
@@ -155,9 +156,9 @@ namespace ServicesHoster.Services
                 SellerUsername = "Charlie D.",
                 CreatedAt = DateTime.UtcNow.AddHours(-3),
                 UpdatedAt = DateTime.UtcNow,
-                IsCompleted = true,
-                TransactionStatus = TransactionStatus.Completed,
-                Feedback = new FeedbackDto(5, "Great seller � item as described, fast shipping."),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null,
                 Bidders = new List<ProductBidderDto>
                 {
                     new ProductBidderDto("user-555", "gamer_A")
@@ -167,13 +168,13 @@ namespace ServicesHoster.Services
             {
                 Id = "p-1006",
                 Name = "Original Oil Painting",
-                Description = "Original oil painting by a local artist � signed and framed.",
+                Description = "Original oil painting by a local artist — signed and framed.",
                 Category = "Art",
-                Status = ProductStatus.Expired,
+                Status = ProductStatus.Active,
                 StartingPrice = 500,
                 CurrentBid = 450,
-                AuctionStartTime = DateTime.UtcNow.AddDays(-7),
-                AuctionEndTime = DateTime.UtcNow.AddDays(-1),
+                AuctionStartTime = DateTime.UtcNow.AddHours(-7),
+                AuctionEndTime = DateTime.UtcNow.AddDays(3),
                 TotalBids = 4,
                 HighestBidderId = "bob",
                 HighestBidderUsername = "Bob K.",
@@ -184,34 +185,11 @@ namespace ServicesHoster.Services
                 },
                 SellerId = "Felhasznalo",
                 SellerUsername = "Felhasznalo",
-                CreatedAt = DateTime.UtcNow.AddDays(-7),
-                UpdatedAt = DateTime.UtcNow.AddDays(-1),
+                CreatedAt = DateTime.UtcNow.AddHours(-7),
+                UpdatedAt = DateTime.UtcNow.AddMinutes(-30),
                 IsCompleted = false,
                 TransactionStatus = null,
                 Feedback = null
-            },
-            new ProductDto
-            {
-                Id = "p-1007",
-                Name = "Full-Suspension Mountain Bike",
-                Description = "High-performance mountain bike with full suspension, excellent for trails.",
-                Category = "Sports",
-                Status = ProductStatus.Active,
-                StartingPrice = 300,
-                CurrentBid = 420,
-                AuctionStartTime = DateTime.UtcNow.AddHours(-6),
-                AuctionEndTime = DateTime.UtcNow.AddDays(4),
-                TotalBids = 6,
-                HighestBidderId = "user-888",
-                HighestBidderUsername = "mountain_biker",
-                SellerId = "system",
-                SellerUsername = "admin",
-                CreatedAt = DateTime.UtcNow.AddHours(-6),
-                UpdatedAt = DateTime.UtcNow.AddMinutes(-45),
-                IsCompleted = false,
-                TransactionStatus = null,
-                Feedback = null,
-                Bidders = new List<ProductBidderDto>()
             },
             new ProductDto
             {
@@ -219,11 +197,11 @@ namespace ServicesHoster.Services
                 Name = "Wireless Noise-Cancelling Headphones",
                 Description = "Comfortable, long battery life, and excellent noise cancellation.",
                 Category = "Electronics",
-                Status = ProductStatus.Draft,
+                Status = ProductStatus.Active,
                 StartingPrice = 180,
                 CurrentBid = 180,
-                AuctionStartTime = DateTime.UtcNow,
-                AuctionEndTime = DateTime.UtcNow.AddHours(1),
+                AuctionStartTime = DateTime.UtcNow.AddHours(-1),
+                AuctionEndTime = DateTime.UtcNow.AddDays(1),
                 TotalBids = 0,
                 HighestBidderId = null,
                 HighestBidderUsername = null,
@@ -235,7 +213,300 @@ namespace ServicesHoster.Services
                 TransactionStatus = null,
                 Feedback = null,
                 Bidders = new List<ProductBidderDto>()
-            }
+            },
+            // ── New seeded products ──
+            new ProductDto
+            {
+                Id = "p-1009",
+                Name = "Handmade Ceramic Vase",
+                Description = "Beautiful hand-thrown ceramic vase with a deep blue glaze, signed by the potter.",
+                Category = "Art",
+                Status = ProductStatus.Active,
+                StartingPrice = 40,
+                CurrentBid = 65,
+                AuctionStartTime = DateTime.UtcNow.AddHours(-3),
+                AuctionEndTime = DateTime.UtcNow.AddDays(1),
+                TotalBids = 4,
+                HighestBidderId = "user-654",
+                HighestBidderUsername = "art_fan",
+                SellerId = "Beni Beni",
+                SellerUsername = "Beni",
+                CreatedAt = DateTime.UtcNow.AddHours(-3),
+                UpdatedAt = DateTime.UtcNow.AddMinutes(-20),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("user-654", "art_fan"),
+                    new ProductBidderDto("bob", "Bob K.")
+                }
+            },
+            new ProductDto
+            {
+                Id = "p-1010",
+                Name = "Espresso Machine — Professional Grade",
+                Description = "Commercial-quality espresso machine with dual boilers and PID temperature control.",
+                Category = "Home & Kitchen",
+                Status = ProductStatus.Active,
+                StartingPrice = 600,
+                CurrentBid = 850,
+                AuctionStartTime = DateTime.UtcNow.AddDays(-1),
+                AuctionEndTime = DateTime.UtcNow.AddDays(3),
+                TotalBids = 8,
+                HighestBidderId = "Boti Boti",
+                HighestBidderUsername = "Boti",
+                SellerId = "Barki",
+                SellerUsername = "Barki",
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+                UpdatedAt = DateTime.UtcNow.AddMinutes(-5),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("Boti Boti", "Boti"),
+                    new ProductBidderDto("user-789", "fashionista"),
+                    new ProductBidderDto("user-888", "mountain_biker")
+                }
+            },
+            new ProductDto
+            {
+                Id = "p-1011",
+                Name = "First Edition Sci-Fi Novel",
+                Description = "Rare 1965 first edition in near-mint condition with original dust jacket.",
+                Category = "Books",
+                Status = ProductStatus.Active,
+                StartingPrice = 120,
+                CurrentBid = 210,
+                AuctionStartTime = DateTime.UtcNow.AddHours(-8),
+                AuctionEndTime = DateTime.UtcNow.AddDays(2),
+                TotalBids = 5,
+                HighestBidderId = "user-123",
+                HighestBidderUsername = "collector_joe",
+                SellerId = "charlie",
+                SellerUsername = "Charlie D.",
+                CreatedAt = DateTime.UtcNow.AddHours(-8),
+                UpdatedAt = DateTime.UtcNow.AddMinutes(-10),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("user-123", "collector_joe"),
+                    new ProductBidderDto("Beni Beni", "Beni")
+                }
+            },
+            new ProductDto
+            {
+                Id = "p-1012",
+                Name = "Drone with 4K Camera",
+                Description = "Foldable quadcopter drone with stabilized 4K camera and 30-minute flight time.",
+                Category = "Electronics",
+                Status = ProductStatus.Draft,
+                StartingPrice = 350,
+                CurrentBid = 350,
+                AuctionStartTime = DateTime.UtcNow.AddHours(2),
+                AuctionEndTime = DateTime.UtcNow.AddDays(5),
+                TotalBids = 0,
+                HighestBidderId = null,
+                HighestBidderUsername = null,
+                SellerId = "Boti Boti",
+                SellerUsername = "Boti",
+                CreatedAt = DateTime.UtcNow.AddMinutes(-30),
+                UpdatedAt = DateTime.UtcNow.AddMinutes(-30),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>()
+            },
+            new ProductDto
+            {
+                Id = "p-1013",
+                Name = "Signed Basketball Jersey",
+                Description = "Authentic game-worn jersey signed by a Hall of Fame player, with certificate of authenticity.",
+                Category = "Sports",
+                Status = ProductStatus.Sold,
+                StartingPrice = 400,
+                CurrentBid = 1250,
+                AuctionStartTime = DateTime.UtcNow.AddDays(-14),
+                AuctionEndTime = DateTime.UtcNow.AddDays(-7),
+                TotalBids = 18,
+                HighestBidderId = "user-888",
+                HighestBidderUsername = "mountain_biker",
+                SellerId = "Felhasznalo",
+                SellerUsername = "Felhasznalo",
+                CreatedAt = DateTime.UtcNow.AddDays(-14),
+                UpdatedAt = DateTime.UtcNow.AddDays(-7),
+                IsCompleted = true,
+                TransactionStatus = TransactionStatus.Completed,
+                Feedback = new FeedbackDto(4, "Authentic item, well packaged. Shipping took a bit longer than expected."),
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("user-888", "mountain_biker"),
+                    new ProductBidderDto("user-555", "gamer_A"),
+                    new ProductBidderDto("bob", "Bob K.")
+                }
+            },
+            new ProductDto
+            {
+                Id = "p-1014",
+                Name = "Vintage Mechanical Keyboard",
+                Description = "Cherry MX Blue switches, full metal chassis, original keycaps from the early 1990s.",
+                Category = "Electronics",
+                Status = ProductStatus.Active,
+                StartingPrice = 80,
+                CurrentBid = 145,
+                AuctionStartTime = DateTime.UtcNow.AddHours(-2),
+                AuctionEndTime = DateTime.UtcNow.AddDays(1).AddHours(6),
+                TotalBids = 7,
+                HighestBidderId = "user-555",
+                HighestBidderUsername = "gamer_A",
+                SellerId = "dana",
+                SellerUsername = "Dana S.",
+                CreatedAt = DateTime.UtcNow.AddHours(-2),
+                UpdatedAt = DateTime.UtcNow.AddMinutes(-3),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("user-555", "gamer_A"),
+                    new ProductBidderDto("Boti Boti", "Boti"),
+                    new ProductBidderDto("user-321", "music_lover")
+                }
+            },
+            new ProductDto
+            {
+                Id = "p-1015",
+                Name = "Handcrafted Leather Wallet",
+                Description = "Full-grain Italian leather bifold wallet, hand-stitched with waxed thread.",
+                Category = "Fashion",
+                Status = ProductStatus.Expired,
+                StartingPrice = 25,
+                CurrentBid = 55,
+                AuctionStartTime = DateTime.UtcNow.AddDays(-5),
+                AuctionEndTime = DateTime.UtcNow.AddHours(-6),
+                TotalBids = 6,
+                HighestBidderId = "Beni Beni",
+                HighestBidderUsername = "Beni",
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("Beni Beni", "Beni"),
+                    new ProductBidderDto("user-654", "art_fan")
+                },
+                SellerId = "Barki",
+                SellerUsername = "Barki",
+                CreatedAt = DateTime.UtcNow.AddDays(-5),
+                UpdatedAt = DateTime.UtcNow.AddHours(-6),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null
+            },
+            new ProductDto
+            {
+                Id = "p-1016",
+                Name = "Acoustic Guitar — Solid Spruce Top",
+                Description = "Solid spruce top, rosewood back and sides. Rich tone, perfect for fingerpicking.",
+                Category = "Music",
+                Status = ProductStatus.Active,
+                StartingPrice = 200,
+                CurrentBid = 310,
+                AuctionStartTime = DateTime.UtcNow.AddHours(-10),
+                AuctionEndTime = DateTime.UtcNow.AddDays(3),
+                TotalBids = 4,
+                HighestBidderId = "user-321",
+                HighestBidderUsername = "music_lover",
+                SellerId = "Beni Beni",
+                SellerUsername = "Beni",
+                CreatedAt = DateTime.UtcNow.AddHours(-10),
+                UpdatedAt = DateTime.UtcNow.AddMinutes(-15),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("user-321", "music_lover"),
+                    new ProductBidderDto("user-123", "collector_joe")
+                }
+            },
+            new ProductDto
+            {
+                Id = "p-1017",
+                Name = "Cast Iron Skillet Set",
+                Description = "Pre-seasoned 3-piece cast iron skillet set (8\", 10\", 12\"). Oven safe to 500°F.",
+                Category = "Home & Kitchen",
+                Status = ProductStatus.Sold,
+                StartingPrice = 45,
+                CurrentBid = 90,
+                AuctionStartTime = DateTime.UtcNow.AddDays(-6),
+                AuctionEndTime = DateTime.UtcNow.AddDays(-2),
+                TotalBids = 9,
+                HighestBidderId = "user-789",
+                HighestBidderUsername = "fashionista",
+                SellerId = "Boti Boti",
+                SellerUsername = "Boti",
+                CreatedAt = DateTime.UtcNow.AddDays(-6),
+                UpdatedAt = DateTime.UtcNow.AddDays(-2),
+                IsCompleted = true,
+                TransactionStatus = TransactionStatus.Completed,
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("user-789", "fashionista"),
+                    new ProductBidderDto("Beni Beni", "Beni")
+                }
+            },
+            new ProductDto
+            {
+                Id = "p-1018",
+                Name = "Telescope — 8\" Dobsonian",
+                Description = "Excellent deep-sky telescope for beginners and intermediates. Includes eyepiece kit.",
+                Category = "Science",
+                Status = ProductStatus.Draft,
+                StartingPrice = 280,
+                CurrentBid = 280,
+                AuctionStartTime = DateTime.UtcNow.AddHours(5),
+                AuctionEndTime = DateTime.UtcNow.AddDays(7),
+                TotalBids = 0,
+                HighestBidderId = null,
+                HighestBidderUsername = null,
+                SellerId = "Felhasznalo",
+                SellerUsername = "Felhasznalo",
+                CreatedAt = DateTime.UtcNow.AddMinutes(-10),
+                UpdatedAt = DateTime.UtcNow.AddMinutes(-10),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>()
+            },
+            new ProductDto
+            {
+                Id = "p-1019",
+                Name = "Retro Polaroid Camera",
+                Description = "Iconic instant camera from the 1980s, fully functional with original leather case.",
+                Category = "Electronics",
+                Status = ProductStatus.Active,
+                StartingPrice = 60,
+                CurrentBid = 95,
+                AuctionStartTime = DateTime.UtcNow.AddHours(-2),
+                AuctionEndTime = DateTime.UtcNow.AddMinutes(1),
+                TotalBids = 4,
+                HighestBidderId = "Boti Boti",
+                HighestBidderUsername = "Boti",
+                SellerId = "Beni Beni",
+                SellerUsername = "Beni",
+                CreatedAt = DateTime.UtcNow.AddHours(-2),
+                UpdatedAt = DateTime.UtcNow.AddMinutes(-1),
+                IsCompleted = false,
+                TransactionStatus = null,
+                Feedback = null,
+                Bidders = new List<ProductBidderDto>
+                {
+                    new ProductBidderDto("Boti Boti", "Boti"),
+                    new ProductBidderDto("user-123", "collector_joe")
+                }
+            },
         });
 
         private static readonly ConcurrentDictionary<string, BidDto> _bids = new();

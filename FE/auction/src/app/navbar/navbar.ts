@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '../services/theme.service';
@@ -17,19 +17,23 @@ export class Navbar {
 
   username: string | null = null;
 
-  readonly isAdminDomain = window.location.hostname === 'admin.auction.local' && window.location.port === '9443';
+  readonly isAdminDomain = window.location.hostname === 'admin.auction.local';
 
   constructor() {
     this.authService.preferredName$
     .subscribe(name => {
-      console.log('Preferred name updated:', name);
       this.username = name
         ? name.charAt(0).toUpperCase() + name.slice(1)
         : null;
     });
+    console.log(window.location.hostname, window.location.port);
   }
 
   toggleTheme(): void {
     this.themeService.toggleTheme();
+  }
+
+  logout(): void {
+    window.location.href = '/api/auth/logout';
   }
 }

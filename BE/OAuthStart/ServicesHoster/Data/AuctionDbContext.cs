@@ -14,7 +14,6 @@ namespace ServicesHoster.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            // Tell Npgsql to accept DateTime with Kind=Unspecified as UTC
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             base.OnConfiguring(optionsBuilder);
         }

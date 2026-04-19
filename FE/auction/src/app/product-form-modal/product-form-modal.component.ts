@@ -19,7 +19,6 @@ export class ProductFormModalComponent {
     category: '',
     status: ProductStatus.Draft,
     startingPrice: 0,
-    reservePrice: null,
     auctionStartTime: '',
     auctionEndTime: '',
   };
@@ -42,8 +41,6 @@ export class ProductFormModalComponent {
   }
 
   onSave(): void {
-    console.log('Saving product from modal:', this.product);
-
     this.save.emit();
   }
 }

@@ -32,7 +32,6 @@ namespace ServicesHoster.Services
                     using IServiceScope scope = _scopeFactory.CreateScope();
                     IProductService productService = scope.ServiceProvider.GetRequiredService<IProductService>();
 
-                    // Proactively expire any auctions that have ended
                     await productService.ExpireEndedAuctionsAsync();
 
                     IEnumerable<ProductDto> activeProducts = await productService.GetAllAsync();

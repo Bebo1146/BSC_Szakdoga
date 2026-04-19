@@ -22,7 +22,6 @@ namespace TokenValidation.TokenValidation
             return GetNameFromJwtString(jwt);
         }
 
-        // New helper: extract token from Authorization header value (e.g. "Bearer <token>")
         public static string? GetTokenFromAuthorizationHeader(string? authorizationHeader)
         {
             if (string.IsNullOrWhiteSpace(authorizationHeader)) return null;
@@ -34,11 +33,9 @@ namespace TokenValidation.TokenValidation
                 return string.IsNullOrEmpty(token) ? null : token;
             }
 
-            // If header doesn't use "Bearer " prefix, assume header itself might be the token
             return string.IsNullOrWhiteSpace(authorizationHeader) ? null : authorizationHeader.Trim();
         }
 
-        // Modified: return a TokenResponse built from the bearer token on the request
         public static TokenResponse? GetTokenFromRequest(HttpRequest? request)
         {
             if (request == null) return null;
@@ -49,7 +46,6 @@ namespace TokenValidation.TokenValidation
                 string? token = GetTokenFromAuthorizationHeader(header);
                 if (string.IsNullOrEmpty(token)) return null;
 
-                // Construct a minimal TokenResponse using the extracted access token.
                 return new TokenResponse
                 {
                     AccessToken = token,
@@ -64,14 +60,12 @@ namespace TokenValidation.TokenValidation
             return null;
         }
 
-        // Internal helpers that operate on raw JWT string
         private static string? GetPreferredNameFromJwtString(string? jwt)
         {
             if (string.IsNullOrEmpty(jwt)) return null;
 
             try
             {
-                // If someone passed a header containing "Bearer ...", strip it defensively
                 if (jwt.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                     jwt = jwt.Substring("Bearer ".Length).Trim();
 

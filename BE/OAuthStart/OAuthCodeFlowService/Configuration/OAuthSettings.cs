@@ -11,10 +11,6 @@ namespace OAuthCodeFlowService.Configuration
         public string PostLogoutRedirectUri { get; set; } = string.Empty;
         public string Scope { get; set; } = "openid profile email";
         public int StateExpirationMinutes { get; set; } = 10;
-
-        /// <summary>
-        /// Optional cookie domain for sharing session across subdomains (e.g. ".auction.local").
-        /// </summary>
         public string? CookieDomain { get; set; }
     }
 }

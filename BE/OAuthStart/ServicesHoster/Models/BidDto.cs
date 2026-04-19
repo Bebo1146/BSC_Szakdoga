@@ -1,8 +1,5 @@
 namespace ServicesHoster.Services
 {
-    /// <summary>
-    /// Represents a bid on an auction
-    /// </summary>
     public record BidDto(
         string Id,
         string ProductId,
