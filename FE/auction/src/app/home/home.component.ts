@@ -35,7 +35,6 @@ export class HomeComponent implements OnDestroy {
   readonly TransactionStatus = TransactionStatus;
 
   query = signal('');
-  // restrict statusFilter to the desired set
   statusFilter = signal<'All' | 'Active' | 'Draft' | 'Sold' | 'Expired'>('All');
   sort = signal<'Newest' | 'Name A-Z' | 'Ending Soon' | 'Most Bids'>('Newest');
   selectedIds = signal<Set<string>>(new Set());
@@ -45,7 +44,6 @@ export class HomeComponent implements OnDestroy {
 
   products = signal<Product[]>([]);
 
-  // Add product modal state
   showAddModal = signal(false);
   saving = signal(false);
   newProduct = signal<NewProduct>({

@@ -35,7 +35,6 @@ function createMockProduct(overrides: Partial<Product> = {}): Product {
   };
 }
 
-// Mock window.matchMedia (used by ThemeService via Navbar)
 if (typeof window !== 'undefined' && !window.matchMedia) {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -80,13 +79,11 @@ describe('ProductComponent', () => {
     const fixture = TestBed.createComponent(ProductComponent);
     component = fixture.componentInstance;
 
-    // The constructor calls loadProducts, so flush the initial request
     const req = httpTesting.expectOne('/api/BffProxy/products/getall');
     req.flush([]);
   });
 
   afterEach(() => {
-    // Flush any outstanding requests silently
     try {
       httpTesting.verify();
     } catch {
@@ -228,9 +225,9 @@ describe('ProductComponent', () => {
     it('should sort by Ending Soon (auctionEndTime ascending)', () => {
       component.sort.set('Ending Soon');
       const result = component.filtered();
-      expect(result[0].id).toBe('p-c'); // April
-      expect(result[1].id).toBe('p-b'); // May
-      expect(result[2].id).toBe('p-a'); // June
+      expect(result[0].id).toBe('p-c');
+      expect(result[1].id).toBe('p-b');
+      expect(result[2].id).toBe('p-a');
     });
 
     it('should sort by Most Bids (totalBids descending)', () => {
@@ -243,7 +240,6 @@ describe('ProductComponent', () => {
   });
 
   describe('parseTimeRemaining', () => {
-    // Access private method for testing
     const callParse = (component: ProductComponent, value: string | null): number => {
       return (component as any).parseTimeRemaining(value);
     };
@@ -257,12 +253,10 @@ describe('ProductComponent', () => {
     });
 
     it('should parse hh:mm:ss format', () => {
-      // 04:25:10 = 4*3600 + 25*60 + 10 = 15910
       expect(callParse(component, '04:25:10')).toBe(15910);
     });
 
     it('should parse days.hh:mm:ss format', () => {
-      // 3.04:25:10 = 3*86400 + 4*3600 + 25*60 + 10 = 275110
       expect(callParse(component, '3.04:25:10')).toBe(275110);
     });
 
@@ -373,15 +367,12 @@ describe('ProductComponent', () => {
       const start = new Date(component.newProduct().auctionStartTime).getTime();
       const end = new Date(component.newProduct().auctionEndTime).getTime();
 
-      // The component uses toISOString().slice(0,16) which may lose precision,
-      // but start and end should be roughly 7 days apart
       const weekMs = 7 * 24 * 60 * 60 * 1000;
       const diff = end - start;
-      // Allow some tolerance for rounding from slicing the ISO string
+
       expect(diff).toBeGreaterThanOrEqual(weekMs - 60000);
       expect(diff).toBeLessThanOrEqual(weekMs + 60000);
 
-      // Both should be non-empty strings
       expect(component.newProduct().auctionStartTime.length).toBeGreaterThan(0);
       expect(component.newProduct().auctionEndTime.length).toBeGreaterThan(0);
     });

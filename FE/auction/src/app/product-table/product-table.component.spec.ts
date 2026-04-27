@@ -1,24 +1,15 @@
 import { ProductTableComponent } from './product-table.component';
 import { ProductStatus } from '../models/product.model';
 
-/**
- * Pure unit tests for ProductTableComponent formatting and selection logic.
- * These tests don't require Angular TestBed since they test pure methods.
- */
 describe('ProductTableComponent – pure logic', () => {
   let component: ProductTableComponent;
 
   beforeEach(() => {
-    // We instantiate the component directly for pure-logic tests.
-    // DI-dependent features (bidService, cdr, authService, router) are not exercised here.
     component = Object.create(ProductTableComponent.prototype);
     component.products = [];
     component.selectedIds = new Set();
   });
 
-  // ──────────────────────────────────────────────
-  // formatTimeRemaining
-  // ──────────────────────────────────────────────
   describe('formatTimeRemaining', () => {
     it('should return "Ended" for null', () => {
       expect(component.formatTimeRemaining(null)).toBe('Ended');
@@ -74,9 +65,6 @@ describe('ProductTableComponent – pure logic', () => {
     });
   });
 
-  // ──────────────────────────────────────────────
-  // formatCurrency
-  // ──────────────────────────────────────────────
   describe('formatCurrency', () => {
     it('should return "—" for null', () => {
       expect(component.formatCurrency(null)).toBe('—');
@@ -99,9 +87,6 @@ describe('ProductTableComponent – pure logic', () => {
     });
   });
 
-  // ──────────────────────────────────────────────
-  // statusLabel
-  // ──────────────────────────────────────────────
   describe('statusLabel', () => {
     it('should return "Draft" for Draft status', () => {
       expect(component.statusLabel(ProductStatus.Draft)).toBe('Draft');
@@ -128,9 +113,6 @@ describe('ProductTableComponent – pure logic', () => {
     });
   });
 
-  // ──────────────────────────────────────────────
-  // Selection logic
-  // ──────────────────────────────────────────────
   describe('isAllSelected', () => {
     it('should return false when products list is empty', () => {
       component.products = [];
@@ -162,7 +144,6 @@ describe('ProductTableComponent – pure logic', () => {
 
     beforeEach(() => {
       emittedSet = null;
-      // Mock the EventEmitter
       component.selectionChange = { emit: (val: Set<string>) => { emittedSet = val; } } as any;
       component.products = [
         { id: 'p-1' } as any,

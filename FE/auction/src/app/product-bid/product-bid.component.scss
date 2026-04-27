@@ -9,11 +9,10 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  align-items: flex-end; /* keep compact at the right side of a table cell */
+  align-items: flex-end;
   padding: 0;
 }
 
-/* Inline compact form for table rows */
 .bid-form {
   display: flex;
   gap: 8px;
@@ -22,7 +21,6 @@
   width: 100%;
 }
 
-/* Small numeric input to fit table cell */
 .bid-form input[type="number"] {
   width: 96px;
   max-width: 30%;
@@ -38,7 +36,6 @@
   box-sizing: border-box;
 }
 
-/* Small primary action button */
 .bid-form button {
   height: 34px;
   padding: 6px 10px;
@@ -53,13 +50,11 @@
   gap: 6px;
 }
 
-/* Disabled state */
 .bid-form button[disabled] {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* Small helper text below the control */
 .bid-error {
   color: var(--danger, #d9534f);
   font-size: 0.78rem;
@@ -68,7 +63,6 @@
   align-self: flex-end;
 }
 
-/* Very small screens: stack controls */
 @media (max-width: 520px) {
   .bid-form {
     flex-direction: column;

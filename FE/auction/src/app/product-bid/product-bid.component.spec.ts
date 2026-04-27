@@ -1,5 +1,4 @@
 import { TestBed } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
 import { ProductBidComponent } from './product-bid.component';
 
 describe('ProductBidComponent', () => {
@@ -13,14 +12,12 @@ describe('ProductBidComponent', () => {
     const fixture = TestBed.createComponent(ProductBidComponent);
     component = fixture.componentInstance;
 
-    // Set default inputs
     component.productId = 'p-test';
     component.highestBid = 100;
     component.currentBid = 100;
     component.minIncrement = 1;
-    component.endsAt = new Date(Date.now() + 3600000).toISOString(); // 1 hour from now
+    component.endsAt = new Date(Date.now() + 3600000).toISOString();
 
-    // Trigger ngOnChanges manually with mock SimpleChanges
     component.ngOnChanges({});
   });
 
@@ -40,7 +37,6 @@ describe('ProductBidComponent', () => {
     });
 
     it('should be invalid when amount is below minimum', () => {
-      // min is max(currentBid, highestBid + minIncrement) = max(100, 101) = 101
       component.amountControl.setValue(50);
       expect(component.amountControl.valid).toBe(false);
     });
@@ -76,7 +72,6 @@ describe('ProductBidComponent', () => {
       component.minIncrement = 1;
       component.ngOnChanges({});
 
-      // min = max(200, 51) = 200
       component.amountControl.setValue(199);
       expect(component.amountControl.valid).toBe(false);
 
@@ -90,7 +85,6 @@ describe('ProductBidComponent', () => {
       component.minIncrement = 1;
       component.ngOnChanges({});
 
-      // min = max(0, 0 + 1) = 1
       component.amountControl.setValue(0);
       expect(component.amountControl.valid).toBe(false);
 
@@ -166,12 +160,10 @@ describe('ProductBidComponent', () => {
     });
 
     it('should clear error message on new valid bid attempt', () => {
-      // First: invalid
       component.amountControl.setValue(null);
       component.placeBid();
       expect(component.errorMsg).toBe('Invalid amount.');
 
-      // Second: valid
       component.amountControl.setValue(200);
       component.placeBid();
       expect(component.errorMsg).toBeNull();

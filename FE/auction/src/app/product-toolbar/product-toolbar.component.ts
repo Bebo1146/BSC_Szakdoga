@@ -18,7 +18,7 @@ export class ProductToolbarComponent {
   @Input() showImport = true;
   @Input() showAddButton = true;
   @Input() addButtonText = '+ Add product';
-  @Input() showStatusSelect = true; // consumers can hide the select
+  @Input() showStatusSelect = true;
   @Input() statusOptions: string[] = ['All', 'Active', 'Draft', 'Sold', 'Expired'];
 
   @Output() queryChange = new EventEmitter<string>();

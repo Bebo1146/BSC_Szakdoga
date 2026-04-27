@@ -7,7 +7,6 @@ describe('FeedbackService', () => {
   let service: FeedbackService;
   let httpTesting: HttpTestingController;
 
-  // Mock localStorage
   let store: Record<string, string> = {};
   const localStorageMock = {
     getItem: (key: string) => store[key] ?? null,

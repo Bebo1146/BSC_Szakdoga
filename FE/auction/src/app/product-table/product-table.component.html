@@ -69,7 +69,6 @@
         <td class="muted" *ngIf="showSeller">{{ p.sellerUsername }}</td>
 
         <td *ngIf="showBid || showDeleteButton" class="col-actions">
-          <!-- Admin actions -->
           <ng-container *ngIf="showDeleteButton; else bidBlock">
             <div class="admin-actions">
               <button
@@ -90,7 +89,6 @@
             </div>
           </ng-container>
 
-          <!-- Normal bid/pay/feedback block -->
           <ng-template #bidBlock>
             <ng-container *ngIf="!p.hasEnded; else payBlock">
               <app-product-bid

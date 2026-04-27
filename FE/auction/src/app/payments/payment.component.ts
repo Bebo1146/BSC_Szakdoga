@@ -40,7 +40,6 @@ export class PaymentComponent implements OnInit {
     cvc: ['', [Validators.required, Validators.pattern(/^\d{3,4}$/)]],
   });
 
-  // format card number as user types: 1234 5678 9012 3456
   formatCardNumber(event: Event) {
     const input = event.target as HTMLInputElement;
     const digits = input.value.replace(/\D/g, '').slice(0, 16);
@@ -49,7 +48,6 @@ export class PaymentComponent implements OnInit {
     input.value = formatted;
   }
 
-  // format expiry as MM/YY
   formatExpiry(event: Event) {
     const input = event.target as HTMLInputElement;
     const digits = input.value.replace(/\D/g, '').slice(0, 4);
@@ -59,7 +57,6 @@ export class PaymentComponent implements OnInit {
   }
 
   ngOnInit() {
-    // re-apply theme in case it was lost on navigation
     this.themeService.applyTheme();
 
     const bidId = this.route.snapshot.queryParamMap.get('bidId');
@@ -73,7 +70,6 @@ export class PaymentComponent implements OnInit {
     this.authService.userId$.pipe(
       filter(id => id !== null),
       take(1),
-      // if session never resolves within 10s, give up
       timeout(10_000),
       switchMap(() => this.bidService.getBidById(bidId))
     ).subscribe({
@@ -116,9 +112,7 @@ export class PaymentComponent implements OnInit {
     this.paymentService
       .createPayment({ bidId, amount: amount ?? 0, method: 'card' })
       .pipe(
-        // step 1: confirm payment (fake: calls /confirm endpoint → succeeded)
         switchMap((res: PaymentResponse) => this.paymentService.finalizePayment(res)),
-        // step 2: if succeeded, mark product as sold
         switchMap((res: any) => {
           if (res?.status === 'succeeded') {
             return this.productService.markAsSold([bidId]).pipe(

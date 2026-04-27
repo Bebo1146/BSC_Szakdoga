@@ -12,8 +12,6 @@ export class AuthCallbackComponent implements OnInit {
   private router = inject(Router);
 
   ngOnInit(): void {
-    // Backend already processed the code and set HttpOnly cookie when it redirected here.
-    // We just confirm session and navigate.
     this.authService.handleFrontendCallback()
     .subscribe((ok) => {
       if (ok) {

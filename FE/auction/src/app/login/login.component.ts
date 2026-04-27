@@ -15,7 +15,6 @@ export class LoginComponent {
   ngOnInit(): void {
     this.authService.login().subscribe({
       next: (response: any) => {
-        // If the backend returns a redirect URL, navigate there
         const redirectUrl = response?.redirectUrl ?? response?.url ?? response;
         if (typeof redirectUrl === 'string') {
           window.location.href = redirectUrl;

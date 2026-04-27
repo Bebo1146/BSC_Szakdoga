@@ -9,11 +9,8 @@ import { Product, NewProduct } from '../models/product.model';
 })
 export class ProductService {
   private readonly http = inject(HttpClient);
-  // use relative path so the Angular dev proxy will forward to the backend
-  // private readonly apiUrl = 'http://localhost:5215/api/BffProxy';
   private readonly apiUrl = '/api/BffProxy';
 
-  // Cookie-based flow: let interceptor handle cookies/auth.
   private readonly defaultOptions = { withCredentials: true };
 
   getAllProducts(): Observable<Product[]> {
@@ -53,7 +50,6 @@ export class ProductService {
     });
   }
 
-  // POST /api/BffProxy/products/mark-sold — accepts a list of product ids
   markAsSold(productIds: string[]): Observable<any> {
     return this.http.post<any>(
       `${this.apiUrl}/products/mark-sold`,

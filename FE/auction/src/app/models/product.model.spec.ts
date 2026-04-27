@@ -1,9 +1,6 @@
 import { Product, ProductStatus, TransactionStatus, NewProduct } from './product.model';
 
 describe('Product Model', () => {
-  // ──────────────────────────────────────────────
-  // ProductStatus enum
-  // ──────────────────────────────────────────────
   describe('ProductStatus enum', () => {
     it('should have correct numeric values', () => {
       expect(ProductStatus.Draft).toBe(0);
@@ -14,7 +11,6 @@ describe('Product Model', () => {
     });
 
     it('should have 5 members', () => {
-      // Numeric enums in TS have reverse mappings, so divide by 2
       const members = Object.keys(ProductStatus).filter((k) => isNaN(Number(k)));
       expect(members).toHaveLength(5);
     });
@@ -28,9 +24,6 @@ describe('Product Model', () => {
     });
   });
 
-  // ──────────────────────────────────────────────
-  // TransactionStatus enum
-  // ──────────────────────────────────────────────
   describe('TransactionStatus enum', () => {
     it('should have correct numeric values', () => {
       expect(TransactionStatus.Pending).toBe(0);
@@ -48,9 +41,6 @@ describe('Product Model', () => {
     });
   });
 
-  // ──────────────────────────────────────────────
-  // Product interface type-checking (compile-time + runtime shape)
-  // ──────────────────────────────────────────────
   describe('Product interface', () => {
     it('should accept a valid product object', () => {
       const product: Product = {
@@ -156,9 +146,6 @@ describe('Product Model', () => {
     });
   });
 
-  // ──────────────────────────────────────────────
-  // NewProduct interface
-  // ──────────────────────────────────────────────
   describe('NewProduct interface', () => {
     it('should accept a valid new product', () => {
       const newProduct: NewProduct = {

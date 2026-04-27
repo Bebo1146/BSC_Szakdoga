@@ -3,7 +3,6 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { Navbar } from './navbar';
 
-// ThemeService calls window.matchMedia in its constructor
 if (typeof window !== 'undefined' && !window.matchMedia) {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,

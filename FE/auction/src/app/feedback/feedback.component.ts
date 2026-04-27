@@ -20,7 +20,7 @@ export class FeedbackComponent implements OnInit {
   private feedbackService = inject(FeedbackService);
 
   productId: string | null = null;
-  rating = 3; // default 3 stars
+  rating = 3;
   hoveredRating = 0;
   comment = '';
   submitted = false;

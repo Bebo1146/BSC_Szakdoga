@@ -22,7 +22,6 @@ export interface PaymentResponse {
 export class PaymentService {
   constructor(private http: HttpClient) {}
 
-  // Routed through the BFF which handles session/token forwarding to Payments service
   private apiUrl = '/api/BffProxy/payments';
 
   createPayment(body: PaymentRequest): Observable<PaymentResponse> {

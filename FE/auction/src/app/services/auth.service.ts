@@ -23,10 +23,8 @@ const STORAGE_USER_ID = 'auth.userId';
 })
 export class AuthService {
   private backendBase = '';
-  //private frontendCallback = 'http://localhost:4200/auth-callback';
   private frontendCallback = '/auth-callback';
 
-  // seed BehaviorSubjects from localStorage so values survive page refresh
   private _preferredName = new BehaviorSubject<string | null>(
     localStorage.getItem(STORAGE_PREFERRED_NAME)
   );
@@ -68,7 +66,6 @@ export class AuthService {
       );
   }
 
-  // Called after backend redirected to frontend callback
   handleFrontendCallback(): Observable<boolean> {
     return this.getSession().pipe(
       tap((session) => {
@@ -116,7 +113,6 @@ export class AuthService {
     return this._userId.getValue();
   }
 
-  // --- keep-alive scheduling ------------------------------------------------
   private scheduleSessionRefresh(expiresAtIso: string | undefined | null): void {
     this.clearScheduledRefresh();
     if (!expiresAtIso) return;
@@ -125,7 +121,6 @@ export class AuthService {
     if (isNaN(expiresAt)) return;
 
     const now = Date.now();
-    // target refresh time: 60s before expiry, but at least 10s in the future
     const target = Math.max(expiresAt - 60_000, now + 10_000);
     const delay = Math.max(0, target - now);
 

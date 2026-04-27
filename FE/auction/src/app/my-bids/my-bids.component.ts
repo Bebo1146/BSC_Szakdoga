@@ -33,7 +33,6 @@ export class MyBidsComponent implements OnInit, OnDestroy {
   readonly TransactionStatus = TransactionStatus;
 
   query = signal('');
-  // restrict statusFilter to the desired set
   statusFilter = signal<'All' | 'Active' | 'Draft' | 'Sold' | 'Expired'>('All');
   sort = signal<'Newest' | 'Name A-Z' | 'Ending Soon' | 'Most Bids'>('Newest');
   selectedIds = signal<Set<string>>(new Set());
@@ -49,13 +48,11 @@ export class MyBidsComponent implements OnInit, OnDestroy {
     const status = this.statusFilter();
     let rows = this.products();
 
-    // hide sold items where feedback has already been given
     rows = rows.filter((p: any) => {
       if (p.status === ProductStatus.Sold && p.feedback !== null && p.feedback !== undefined) {
         return false;
       }
       
-      // only show expired items if current user is the highest bidder
       const isExpired = p.status === 'expired' || p.status === ProductStatus.Expired;
       if (isExpired) {
         return p.highestBidderId === currentUserId || p.highestBidderUsername === currentUsername;
@@ -64,11 +61,9 @@ export class MyBidsComponent implements OnInit, OnDestroy {
       return true;
     });
 
-    // apply status filter from toolbar (if not "All")
     if (status && status !== 'All') {
       rows = rows.filter((r: any) => {
         const statusEnum = (ProductStatus as any)[status];
-        // support both enum value and lowercase string representations
         return r.status === statusEnum || String(r.status).toLowerCase() === status.toLowerCase();
       });
     }
@@ -82,7 +77,6 @@ export class MyBidsComponent implements OnInit, OnDestroy {
       );
     }
 
-    // apply sorting
     switch (this.sort()) {
       case 'Name A-Z':
         rows = [...rows].sort((a, b) => a.name.localeCompare(b.name));

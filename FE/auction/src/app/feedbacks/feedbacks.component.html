@@ -9,7 +9,6 @@
 
     <ng-container *ngIf="!loading() && !error()">
 
-      <!-- summary -->
       <div class="summary card" *ngIf="feedbacks().length > 0">
         <div class="avg-score">{{ averageRating() | number:'1.1-1' }}</div>
         <div class="avg-stars">
@@ -22,7 +21,6 @@
         <div class="avg-label">{{ feedbacks().length }} review{{ feedbacks().length !== 1 ? 's' : '' }}</div>
       </div>
 
-      <!-- list -->
       <div class="feedback-list" *ngIf="feedbacks().length > 0">
         <div class="feedback-card card" *ngFor="let f of feedbacks()">
           <div class="feedback-header">

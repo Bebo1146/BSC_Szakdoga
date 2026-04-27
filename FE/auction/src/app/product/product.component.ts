@@ -165,7 +165,6 @@ export class ProductComponent implements OnDestroy {
             }
           }
 
-          // Check if any products were removed
           if (next.length !== current.length) {
             hasChanges = true;
           }
@@ -284,7 +283,6 @@ export class ProductComponent implements OnDestroy {
 
   private parseTimeRemaining(timeRemaining: string | null): number {
     if (!timeRemaining) return 0;
-    // expects format like "3.04:25:10" (days.hh:mm:ss) or "04:25:10"
     const parts = timeRemaining.split(':');
     if (parts.length === 3) {
       const dayHour = parts[0].split('.');
