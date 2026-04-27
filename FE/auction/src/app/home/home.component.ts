@@ -8,7 +8,8 @@ import { ProductFormModalComponent } from '../product-form-modal/product-form-mo
 import { ProductToolbarComponent } from '../product-toolbar/product-toolbar.component';
 import { ProductService } from '../services/product.service';
 import { AuctionSignalService, AuctionTimeUpdate } from '../services/auction-hub.service';
-import { Subscription } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import {
   Product,
   NewProduct,
@@ -28,6 +29,7 @@ export class HomeComponent implements OnDestroy {
   private readonly auctionHub = inject(AuctionSignalService);
   private readonly router = inject(Router);
   private hubSubscription?: Subscription;
+  private pollingSubscription?: Subscription;
 
   readonly ProductStatus = ProductStatus;
   readonly TransactionStatus = TransactionStatus;
@@ -97,6 +99,7 @@ export class HomeComponent implements OnDestroy {
         })));
         this.loading.set(false);
         this.connectToHub();
+        this.startPolling();
       },
       error: (err) => {
         this.loading.set(false);
@@ -133,8 +136,61 @@ export class HomeComponent implements OnDestroy {
     });
   }
 
+  private startPolling(): void {
+    this.pollingSubscription?.unsubscribe();
+
+    this.pollingSubscription = interval(3000).pipe(
+      switchMap(() => this.productService.getMyProducts())
+    ).subscribe({
+      next: (rows) => {
+        const incoming = (rows ?? []).map(p => ({
+          ...p,
+          timeRemainingSeconds: p.timeRemainingSeconds ?? this.parseTimeRemaining(p.timeRemaining),
+        }));
+
+        this.products.update(current => {
+          const currentMap = new Map(current.map(p => [p.id, p]));
+          let hasChanges = false;
+          const next: Product[] = [];
+
+          for (const item of incoming) {
+            const existing = currentMap.get(item.id);
+            if (!existing) {
+              hasChanges = true;
+              next.push(item);
+            } else {
+              if (
+                existing.currentBid !== item.currentBid ||
+                existing.totalBids !== item.totalBids ||
+                existing.highestBidderId !== item.highestBidderId ||
+                existing.highestBidderUsername !== item.highestBidderUsername ||
+                existing.status !== item.status ||
+                existing.transactionStatus !== item.transactionStatus ||
+                existing.isCompleted !== item.isCompleted ||
+                existing.name !== item.name ||
+                existing.description !== item.description
+              ) {
+                hasChanges = true;
+                next.push({ ...item, timeRemainingSeconds: existing.timeRemainingSeconds ?? item.timeRemainingSeconds });
+              } else {
+                next.push(existing);
+              }
+            }
+          }
+
+          if (next.length !== current.length) {
+            hasChanges = true;
+          }
+
+          return hasChanges ? next : current;
+        });
+      },
+    });
+  }
+
   ngOnDestroy(): void {
     this.hubSubscription?.unsubscribe();
+    this.pollingSubscription?.unsubscribe();
     this.auctionHub.stop();
   }
 

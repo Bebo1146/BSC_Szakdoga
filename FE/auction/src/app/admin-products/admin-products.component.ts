@@ -7,7 +7,8 @@ import { ProductTableComponent } from '../product-table/product-table.component'
 import { ProductToolbarComponent } from '../product-toolbar/product-toolbar.component';
 import { ProductService } from '../services/product.service';
 import { AuctionSignalService, AuctionTimeUpdate } from '../services/auction-hub.service';
-import { Subscription } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { Product, ProductStatus } from '../models/product.model';
 import { RejectModalComponent } from '../reject-modal/reject-modal.component';
 
@@ -23,6 +24,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
   private readonly auctionHub = inject(AuctionSignalService);
   private readonly router = inject(Router);
   private hubSubscription?: Subscription;
+  private pollingSubscription?: Subscription;
 
   readonly ProductStatus = ProductStatus;
 
@@ -100,6 +102,7 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
         })));
         this.loading.set(false);
         this.connectToHub();
+        this.startPolling();
       },
       error: (err) => {
         this.loading.set(false);
@@ -136,8 +139,33 @@ export class AdminProductsComponent implements OnInit, OnDestroy {
     });
   }
 
+  private startPolling(): void {
+    this.pollingSubscription?.unsubscribe();
+
+    this.pollingSubscription = interval(3000).pipe(
+      switchMap(() => this.productService.getAllProducts())
+    ).subscribe({
+      next: (rows) => {
+        const incoming = (rows ?? []).map(p => ({
+          ...p,
+          timeRemainingSeconds: p.timeRemainingSeconds ?? this.parseTimeRemaining(p.timeRemaining),
+        }));
+
+        this.products.update(current => {
+          const currentIds = new Set(current.map(p => p.id));
+          const newItems = incoming.filter(p => !currentIds.has(p.id));
+
+          if (newItems.length === 0) return current;
+
+          return [...current, ...newItems];
+        });
+      },
+    });
+  }
+
   ngOnDestroy(): void {
     this.hubSubscription?.unsubscribe();
+    this.pollingSubscription?.unsubscribe();
     this.auctionHub.stop();
   }
 
